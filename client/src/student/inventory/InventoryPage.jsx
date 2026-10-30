@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import { getItems } from '../data/items.js'
+import { getItems } from '../../data/items.js'
 import './InventoryPage.css'
+
+const useMockData = import.meta.env.USE_MOCK_DATA === 'true'
 
 function InventoryPage() {
   const [items, setItems] = useState([])
@@ -83,6 +85,8 @@ function InventoryPage() {
             </div>
           </div>
 
+          {useMockData && <p>Sample inventory — displayed quantities are for preview.</p>}
+
           <section className="catalogue-panel" aria-label="Inventory catalogue">
             <div className="catalogue-toolbar">
               <div>
@@ -145,7 +149,7 @@ function InventoryPage() {
                       <td className="type-cell">{item.type}</td>
                       <td>
                         <span className="stock-value">
-                          {item.stock.available.toLocaleString()} {item.unit}
+                          {(item.stock.available / item.quantityScale).toLocaleString(undefined, { maximumFractionDigits: 2 })} {item.unit}
                         </span>
                       </td>
                       <td>

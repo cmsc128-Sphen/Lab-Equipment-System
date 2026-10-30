@@ -1,4 +1,4 @@
-.equipment-app {
+:where(.admin-page) .equipment-app {
   min-height: 100vh;
   color: #333;
   background: #f5f5f5;
@@ -6,7 +6,7 @@
   font-size: 12px;
 }
 
-.site-header {
+:where(.admin-page) .site-header {
   display: flex;
   height: 54px;
   align-items: stretch;
@@ -15,7 +15,7 @@
   border-bottom: 1px solid #d5d5d5;
 }
 
-.brand-lockup {
+:where(.admin-page) .brand-lockup {
   display: flex;
   min-width: 260px;
   align-items: center;
@@ -24,7 +24,7 @@
   text-decoration: none;
 }
 
-.equipment-logo {
+:where(.admin-page) .equipment-logo {
   display: grid;
   width: 27px;
   height: 27px;
@@ -34,20 +34,20 @@
   border-radius: 5px;
 }
 
-.equipment-logo svg {
+:where(.admin-page) .equipment-logo svg {
   width: 22px;
   height: 22px;
   stroke: currentColor;
   stroke-width: 1;
 }
 
-.brand-lockup > strong {
+:where(.admin-page) .brand-lockup > strong {
   font-size: 15px;
   font-weight: 650;
   letter-spacing: -0.3px;
 }
 
-.admin-label {
+:where(.admin-page) .admin-label {
   padding: 3px 6px;
   background: #f3f3f3;
   border: 1px solid #d3d3d3;
@@ -56,15 +56,15 @@
   font-weight: 700;
 }
 
-.main-nav {
+:where(.admin-page) .main-nav {
   display: flex;
   height: 100%;
   align-items: stretch;
   gap: 7px;
 }
 
-.main-nav a,
-.main-nav span {
+:where(.admin-page) .main-nav a,
+:where(.admin-page) .main-nav span {
   display: flex;
   min-width: 86px;
   align-items: center;
@@ -75,21 +75,21 @@
   font-size: 11px;
 }
 
-.main-nav a.active {
+:where(.admin-page) .main-nav a.active {
   color: #292929;
   border-bottom: 2px solid #383838;
   font-weight: 700;
 }
 
-.main-nav a.disabled-link {
+:where(.admin-page) .main-nav a.disabled-link {
   color: #777;
 }
 
-.main-nav span.disabled-link {
+:where(.admin-page) .main-nav span.disabled-link {
   color: #777;
 }
 
-.staff-profile {
+:where(.admin-page) .staff-profile {
   display: flex;
   align-items: center;
   gap: 9px;
@@ -101,7 +101,7 @@
   text-align: left;
 }
 
-.profile-initials {
+:where(.admin-page) .profile-initials {
   display: grid;
   width: 25px;
   height: 25px;
@@ -111,34 +111,34 @@
   font-size: 9px;
 }
 
-.profile-text strong,
-.profile-text small {
+:where(.admin-page) .profile-text strong,
+:where(.admin-page) .profile-text small {
   display: block;
 }
 
-.profile-text strong {
+:where(.admin-page) .profile-text strong {
   font-size: 10px;
   font-weight: 700;
 }
 
-.profile-text small {
+:where(.admin-page) .profile-text small {
   margin-top: 2px;
   color: #777;
   font-size: 9px;
 }
 
-.profile-chevron {
+:where(.admin-page) .profile-chevron {
   margin-left: 4px;
   color: #555;
 }
 
-.booking-page {
+:where(.admin-page) .booking-page {
   width: min(100%, 1640px);
   padding: 17px 28px 26px;
   margin: 0 auto;
 }
 
-.page-title-row {
+:where(.admin-page) .page-title-row {
   display: flex;
   min-height: 60px;
   align-items: center;
@@ -147,7 +147,7 @@
   margin-bottom: 12px;
 }
 
-.page-title-row h1 {
+:where(.admin-page) .page-title-row h1 {
   margin: 0;
   color: #303030;
   font-size: 21px;
@@ -155,29 +155,29 @@
   letter-spacing: -0.45px;
 }
 
-.page-title-row p {
+:where(.admin-page) .page-title-row p {
   margin: 5px 0 0;
   color: #777;
   font-size: 11px;
 }
 
-.department-info {
+:where(.admin-page) .department-info {
   display: grid;
   gap: 4px;
   text-align: right;
 }
 
-.department-info strong {
+:where(.admin-page) .department-info strong {
   font-size: 10px;
   font-weight: 650;
 }
 
-.department-info span {
+:where(.admin-page) .department-info span {
   color: #777;
   font-size: 9px;
 }
 
-.prototype-notice {
+:where(.admin-page) .prototype-notice {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -190,7 +190,7 @@
   font-size: 10px;
 }
 
-.prototype-notice > span {
+:where(.admin-page) .prototype-notice > span {
   display: grid;
   width: 14px;
   height: 14px;
@@ -201,47 +201,47 @@
   font-size: 9px;
 }
 
-.booking-workspace {
+:where(.admin-page) .booking-workspace {
   display: grid;
   grid-template-columns: minmax(290px, 335px) minmax(0, 1fr);
   align-items: stretch;
   gap: 16px;
 }
 
-.booking-list-panel,
-.review-panel {
+:where(.admin-page) .booking-list-panel,
+:where(.admin-page) .review-panel {
   min-width: 0;
   background: #fff;
   border: 1px solid #d5d5d5;
   border-radius: 5px;
 }
 
-.booking-list-panel {
+:where(.admin-page) .booking-list-panel {
   display: flex;
   min-height: 615px;
   flex-direction: column;
   overflow: hidden;
 }
 
-.list-panel-heading {
+:where(.admin-page) .list-panel-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 13px 13px 8px;
 }
 
-.list-panel-heading h2 {
+:where(.admin-page) .list-panel-heading h2 {
   margin: 0;
   font-size: 14px;
   font-weight: 650;
 }
 
-.list-panel-heading > span {
+:where(.admin-page) .list-panel-heading > span {
   color: #777;
   font-size: 9px;
 }
 
-.search-field {
+:where(.admin-page) .search-field {
   display: flex;
   height: 31px;
   align-items: center;
@@ -252,7 +252,7 @@
   border-radius: 4px;
 }
 
-.search-field svg {
+:where(.admin-page) .search-field svg {
   width: 13px;
   height: 13px;
   flex: 0 0 auto;
@@ -262,7 +262,7 @@
   stroke-width: 1.4;
 }
 
-.search-field input {
+:where(.admin-page) .search-field input {
   width: 100%;
   min-width: 0;
   padding: 0;
@@ -273,16 +273,16 @@
   font-size: 9px;
 }
 
-.search-field input::placeholder {
+:where(.admin-page) .search-field input::placeholder {
   color: #888;
 }
 
-.search-field:focus-within {
+:where(.admin-page) .search-field:focus-within {
   border-color: #777;
   outline: 2px solid #e6e6e6;
 }
 
-.filter-tabs {
+:where(.admin-page) .filter-tabs {
   display: flex;
   min-height: 39px;
   align-items: center;
@@ -291,7 +291,7 @@
   border-bottom: 1px solid #333;
 }
 
-.filter-chip {
+:where(.admin-page) .filter-chip {
   min-height: 23px;
   flex: 0 0 auto;
   padding: 0 7px;
@@ -302,7 +302,7 @@
   font-size: 9px;
 }
 
-.status-filter select {
+:where(.admin-page) .status-filter select {
   height: 23px;
   padding: 0 19px 0 7px;
   color: #444;
@@ -312,18 +312,18 @@
   font-size: 9px;
 }
 
-.filter-chip.active {
+:where(.admin-page) .filter-chip.active {
   color: #fff;
   background: #333;
   border-color: #333;
 }
 
-.booking-rows {
+:where(.admin-page) .booking-rows {
   flex: 1;
   overflow-y: auto;
 }
 
-.booking-row {
+:where(.admin-page) .booking-row {
   position: relative;
   display: block;
   width: 100%;
@@ -336,28 +336,28 @@
   text-align: left;
 }
 
-.booking-row:hover {
+:where(.admin-page) .booking-row:hover {
   background: #fafafa;
 }
 
-.booking-row.selected {
+:where(.admin-page) .booking-row.selected {
   background: #e9e9e9;
   box-shadow: inset 2px 0 #333;
 }
 
-.booking-row-top {
+:where(.admin-page) .booking-row-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
 }
 
-.booking-row-top > strong {
+:where(.admin-page) .booking-row-top > strong {
   font-size: 11px;
   font-weight: 650;
 }
 
-.booking-status {
+:where(.admin-page) .booking-status {
   display: inline-flex;
   min-height: 19px;
   align-items: center;
@@ -372,32 +372,32 @@
   white-space: nowrap;
 }
 
-.booking-status.approved {
+:where(.admin-page) .booking-status.approved {
   background: #f1f4ef;
 }
 
-.booking-status.ready-for-pickup {
+:where(.admin-page) .booking-status.ready-for-pickup {
   background: #f2f2f2;
 }
 
-.booking-status.disapproved {
+:where(.admin-page) .booking-status.disapproved {
   background: #f8eeee;
 }
 
-.booking-row-meta,
-.booking-row-pickup {
+:where(.admin-page) .booking-row-meta,
+:where(.admin-page) .booking-row-pickup {
   display: block;
   margin-top: 7px;
   color: #777;
   font-size: 9px;
 }
 
-.booking-row-pickup {
+:where(.admin-page) .booking-row-pickup {
   margin-top: 5px;
   color: #555;
 }
 
-.selected-indicator {
+:where(.admin-page) .selected-indicator {
   position: absolute;
   right: 12px;
   bottom: 11px;
@@ -405,7 +405,7 @@
   font-size: 8px;
 }
 
-.list-pagination {
+:where(.admin-page) .list-pagination {
   display: flex;
   min-height: 43px;
   align-items: center;
@@ -416,14 +416,14 @@
   font-size: 9px;
 }
 
-.list-pagination > div {
+:where(.admin-page) .list-pagination > div {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.list-pagination button,
-.list-pagination > div > span {
+:where(.admin-page) .list-pagination button,
+:where(.admin-page) .list-pagination > div > span {
   display: grid;
   width: 24px;
   height: 24px;
@@ -435,30 +435,30 @@
   font-size: 12px;
 }
 
-.list-pagination > div > span {
+:where(.admin-page) .list-pagination > div > span {
   font-size: 10px;
 }
 
-.list-pagination button:disabled {
+:where(.admin-page) .list-pagination button:disabled {
   color: #aaa;
   cursor: default;
 }
 
-.no-bookings {
+:where(.admin-page) .no-bookings {
   padding: 30px 12px;
   color: #777;
   font-size: 10px;
   text-align: center;
 }
 
-.review-panel {
+:where(.admin-page) .review-panel {
   display: flex;
   min-height: 615px;
   flex-direction: column;
   overflow: hidden;
 }
 
-.request-heading {
+:where(.admin-page) .request-heading {
   display: flex;
   min-height: 56px;
   align-items: center;
@@ -468,19 +468,19 @@
   border-bottom: 1px solid #e1e1e1;
 }
 
-.request-heading h2 {
+:where(.admin-page) .request-heading h2 {
   margin: 0;
   font-size: 15px;
   font-weight: 650;
 }
 
-.request-heading p {
+:where(.admin-page) .request-heading p {
   margin: 4px 0 0;
   color: #777;
   font-size: 9px;
 }
 
-.review-state {
+:where(.admin-page) .review-state {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -488,29 +488,29 @@
   font-size: 9px;
 }
 
-.student-details {
+:where(.admin-page) .student-details {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px 16px;
   padding: 11px 16px 9px;
 }
 
-.student-details > div {
+:where(.admin-page) .student-details > div {
   min-width: 0;
 }
 
-.student-details span,
-.student-details strong {
+:where(.admin-page) .student-details span,
+:where(.admin-page) .student-details strong {
   display: block;
 }
 
-.student-details span {
+:where(.admin-page) .student-details span {
   margin-bottom: 4px;
   color: #777;
   font-size: 8px;
 }
 
-.student-details strong {
+:where(.admin-page) .student-details strong {
   overflow: hidden;
   color: #333;
   font-size: 9px;
@@ -519,7 +519,7 @@
   white-space: nowrap;
 }
 
-.policy-note {
+:where(.admin-page) .policy-note {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -531,16 +531,16 @@
   line-height: 1.4;
 }
 
-.policy-note > span {
+:where(.admin-page) .policy-note > span {
   flex: 0 0 auto;
 }
 
-.equipment-section {
+:where(.admin-page) .equipment-section {
   padding: 0 16px;
   margin-top: 14px;
 }
 
-.equipment-section-heading {
+:where(.admin-page) .equipment-section-heading {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -548,33 +548,33 @@
   margin-bottom: 7px;
 }
 
-.equipment-section-heading h3 {
+:where(.admin-page) .equipment-section-heading h3 {
   margin: 0;
   font-size: 12px;
   font-weight: 650;
 }
 
-.equipment-section-heading > span {
+:where(.admin-page) .equipment-section-heading > span {
   color: #777;
   font-size: 8px;
   text-align: right;
 }
 
-.equipment-table-wrap {
+:where(.admin-page) .equipment-table-wrap {
   width: 100%;
   overflow-x: auto;
   border: 1px solid #d9d9d9;
   border-radius: 2px;
 }
 
-.equipment-table {
+:where(.admin-page) .equipment-table {
   width: 100%;
   min-width: 750px;
   border-collapse: collapse;
   font-size: 9px;
 }
 
-.equipment-table th {
+:where(.admin-page) .equipment-table th {
   padding: 6px 7px;
   color: #333;
   background: #eaeaea;
@@ -585,7 +585,7 @@
   white-space: nowrap;
 }
 
-.equipment-table td {
+:where(.admin-page) .equipment-table td {
   height: 29px;
   padding: 3px 7px;
   color: #4d4d4d;
@@ -593,31 +593,31 @@
   white-space: nowrap;
 }
 
-.equipment-table tbody tr:last-child td {
+:where(.admin-page) .equipment-table tbody tr:last-child td {
   border-bottom: 0;
 }
 
-.equipment-table td strong {
+:where(.admin-page) .equipment-table td strong {
   color: #3b3b3b;
   font-weight: 650;
 }
 
-.equipment-table .out-of-stock-row {
+:where(.admin-page) .equipment-table .out-of-stock-row {
   background: #f3f3f3;
 }
 
-.equipment-table td .zero-stock {
+:where(.admin-page) .equipment-table td .zero-stock {
   color: #333;
 }
 
-.allocation-cell {
+:where(.admin-page) .allocation-cell {
   display: flex;
   align-items: center;
   gap: 5px;
   color: #777;
 }
 
-.allocation-cell input {
+:where(.admin-page) .allocation-cell input {
   width: 50px;
   height: 22px;
   padding: 2px 5px;
@@ -628,34 +628,34 @@
   font-size: 9px;
 }
 
-.allocation-cell input:disabled {
+:where(.admin-page) .allocation-cell input:disabled {
   color: #777;
   background: #f3f3f3;
 }
 
-.allocation-cell input:focus-visible,
-.decision-fields textarea:focus-visible {
+:where(.admin-page) .allocation-cell input:focus-visible,
+:where(.admin-page) .decision-fields textarea:focus-visible {
   outline: 2px solid #bbb;
   outline-offset: 1px;
 }
 
-.availability {
+:where(.admin-page) .availability {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   font-size: 8px;
 }
 
-.availability.available {
+:where(.admin-page) .availability.available {
   color: #3d3d3d;
 }
 
-.availability.unavailable,
-.availability.rationed {
+:where(.admin-page) .availability.unavailable,
+:where(.admin-page) .availability.rationed {
   color: #555;
 }
 
-.allocation-footnote {
+:where(.admin-page) .allocation-footnote {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -664,7 +664,7 @@
   font-size: 8px;
 }
 
-.decision-fields {
+:where(.admin-page) .decision-fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
@@ -673,7 +673,7 @@
   border-bottom: 1px solid #dedede;
 }
 
-.decision-fields label > span {
+:where(.admin-page) .decision-fields label > span {
   display: block;
   margin-bottom: 5px;
   color: #444;
@@ -681,7 +681,7 @@
   font-weight: 650;
 }
 
-.decision-fields textarea {
+:where(.admin-page) .decision-fields textarea {
   display: block;
   width: 100%;
   min-height: 45px;
@@ -695,23 +695,23 @@
   line-height: 1.4;
 }
 
-.decision-fields textarea:disabled {
+:where(.admin-page) .decision-fields textarea:disabled {
   color: #777;
   background: #f7f7f7;
 }
 
-.decision-fields textarea::placeholder {
+:where(.admin-page) .decision-fields textarea::placeholder {
   color: #888;
 }
 
-.decision-fields small {
+:where(.admin-page) .decision-fields small {
   display: block;
   margin-top: 4px;
   color: #888;
   font-size: 8px;
 }
 
-.email-option {
+:where(.admin-page) .email-option {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -720,19 +720,19 @@
   font-size: 9px;
 }
 
-.email-option input {
+:where(.admin-page) .email-option input {
   width: 12px;
   height: 12px;
   margin: 0;
   accent-color: #444;
 }
 
-.email-option small {
+:where(.admin-page) .email-option small {
   color: #888;
   font-size: 8px;
 }
 
-.decision-notice {
+:where(.admin-page) .decision-notice {
   padding: 7px 10px;
   margin: 0 16px 9px;
   color: #435648;
@@ -742,7 +742,7 @@
   font-size: 9px;
 }
 
-.review-footer {
+:where(.admin-page) .review-footer {
   display: flex;
   min-height: 72px;
   align-items: center;
@@ -754,28 +754,28 @@
   border-top: 1px solid #dedede;
 }
 
-.next-step,
-.decision-actions {
+:where(.admin-page) .next-step,
+:where(.admin-page) .decision-actions {
   display: grid;
   gap: 6px;
 }
 
-.next-step > span,
-.decision-actions > span {
+:where(.admin-page) .next-step > span,
+:where(.admin-page) .decision-actions > span {
   color: #888;
   font-size: 8px;
 }
 
-.next-step > div,
-.decision-actions > div {
+:where(.admin-page) .next-step > div,
+:where(.admin-page) .decision-actions > div {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.prepare-button,
-.approve-button,
-.disapprove-button {
+:where(.admin-page) .prepare-button,
+:where(.admin-page) .approve-button,
+:where(.admin-page) .disapprove-button {
   display: inline-flex;
   min-height: 29px;
   align-items: center;
@@ -789,68 +789,68 @@
   white-space: nowrap;
 }
 
-.prepare-button {
+:where(.admin-page) .prepare-button {
   color: #999;
   background: #f3f3f3;
 }
 
-.prepare-button:disabled {
+:where(.admin-page) .prepare-button:disabled {
   cursor: not-allowed;
 }
 
-.next-step small {
+:where(.admin-page) .next-step small {
   color: #777;
   font-size: 8px;
 }
 
-.decision-actions {
+:where(.admin-page) .decision-actions {
   justify-items: end;
 }
 
-.disapprove-button {
+:where(.admin-page) .disapprove-button {
   color: #444;
   background: #fff;
 }
 
-.approve-button {
+:where(.admin-page) .approve-button {
   color: #fff;
   background: #333;
   border-color: #333;
 }
 
-.approve-button:hover:not(:disabled) {
+:where(.admin-page) .approve-button:hover:not(:disabled) {
   background: #171717;
 }
 
-.disapprove-button:hover:not(:disabled) {
+:where(.admin-page) .disapprove-button:hover:not(:disabled) {
   background: #f3f3f3;
 }
 
-.approve-button:disabled,
-.disapprove-button:disabled {
+:where(.admin-page) .approve-button:disabled,
+:where(.admin-page) .disapprove-button:disabled {
   color: #999;
   background: #eee;
   border-color: #ddd;
   cursor: not-allowed;
 }
 
-.no-selection {
+:where(.admin-page) .no-selection {
   align-items: center;
   justify-content: center;
   text-align: center;
 }
 
-.no-selection h2 {
+:where(.admin-page) .no-selection h2 {
   margin: 0;
   font-size: 15px;
 }
 
-.no-selection p {
+:where(.admin-page) .no-selection p {
   color: #777;
   font-size: 10px;
 }
 
-.prototype-popover {
+:where(.admin-page) .prototype-popover {
   position: fixed;
   top: 60px;
   right: 26px;
@@ -866,7 +866,7 @@
   line-height: 1.5;
 }
 
-.prototype-popover button {
+:where(.admin-page) .prototype-popover button {
   position: absolute;
   top: 5px;
   right: 7px;
@@ -876,7 +876,7 @@
   font-size: 16px;
 }
 
-.visually-hidden {
+:where(.admin-page) .visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -888,219 +888,219 @@
 }
 
 @media (min-width: 1500px) {
-  .booking-page {
+  :where(.admin-page) .booking-page {
     padding-top: 25px;
   }
 
-  .booking-workspace {
+  :where(.admin-page) .booking-workspace {
     grid-template-columns: minmax(320px, 390px) minmax(0, 1fr);
     gap: 18px;
   }
 
-  .booking-list-panel,
-  .review-panel {
+  :where(.admin-page) .booking-list-panel,
+  :where(.admin-page) .review-panel {
     min-height: 690px;
   }
 }
 
 @media (max-width: 1100px) {
-  .site-header {
+  :where(.admin-page) .site-header {
     padding: 0 18px;
   }
 
-  .brand-lockup {
+  :where(.admin-page) .brand-lockup {
     min-width: 220px;
   }
 
-  .booking-page {
+  :where(.admin-page) .booking-page {
     padding-right: 18px;
     padding-left: 18px;
   }
 
-  .booking-workspace {
+  :where(.admin-page) .booking-workspace {
     grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.7fr);
     gap: 12px;
   }
 
-  .student-details {
+  :where(.admin-page) .student-details {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .equipment-section {
+  :where(.admin-page) .equipment-section {
     padding: 0 12px;
   }
 
-  .decision-fields {
+  :where(.admin-page) .decision-fields {
     padding-right: 12px;
     padding-left: 12px;
   }
 
-  .review-footer {
+  :where(.admin-page) .review-footer {
     align-items: flex-start;
   }
 
-  .next-step > div {
+  :where(.admin-page) .next-step > div {
     align-items: flex-start;
     flex-direction: column;
   }
 }
 
 @media (max-width: 760px) {
-  .site-header {
+  :where(.admin-page) .site-header {
     height: auto;
     min-height: 54px;
     flex-wrap: wrap;
     padding: 0 14px;
   }
 
-  .brand-lockup {
+  :where(.admin-page) .brand-lockup {
     min-width: 0;
     height: 52px;
     flex: 1 1 auto;
   }
 
-  .staff-profile {
+  :where(.admin-page) .staff-profile {
     height: 52px;
   }
 
-  .profile-text {
+  :where(.admin-page) .profile-text {
     display: none;
   }
 
-  .profile-chevron {
+  :where(.admin-page) .profile-chevron {
     display: none;
   }
 
-  .main-nav {
+  :where(.admin-page) .main-nav {
     width: 100%;
     height: 38px;
     order: 2;
   }
 
-  .main-nav a,
-  .main-nav span {
+  :where(.admin-page) .main-nav a,
+  :where(.admin-page) .main-nav span {
     min-width: 0;
     flex: 1;
   }
 
-  .booking-page {
+  :where(.admin-page) .booking-page {
     padding: 14px 12px 20px;
   }
 
-  .page-title-row {
+  :where(.admin-page) .page-title-row {
     align-items: flex-start;
     flex-direction: column;
     gap: 9px;
   }
 
-  .department-info {
+  :where(.admin-page) .department-info {
     text-align: left;
   }
 
-  .booking-workspace {
+  :where(.admin-page) .booking-workspace {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .booking-list-panel {
+  :where(.admin-page) .booking-list-panel {
     min-height: auto;
     max-height: 360px;
   }
 
-  .booking-rows {
+  :where(.admin-page) .booking-rows {
     min-height: 0;
   }
 
-  .review-panel {
+  :where(.admin-page) .review-panel {
     min-height: 610px;
   }
 }
 
 @media (max-width: 520px) {
-  .brand-lockup > strong {
+  :where(.admin-page) .brand-lockup > strong {
     font-size: 13px;
   }
 
-  .admin-label {
+  :where(.admin-page) .admin-label {
     font-size: 8px;
   }
 
-  .page-title-row h1 {
+  :where(.admin-page) .page-title-row h1 {
     font-size: 19px;
   }
 
-  .review-state {
+  :where(.admin-page) .review-state {
     align-items: flex-end;
     flex-direction: column;
   }
 
-  .request-heading {
+  :where(.admin-page) .request-heading {
     align-items: flex-start;
     padding-right: 10px;
     padding-left: 10px;
   }
 
-  .request-heading h2 {
+  :where(.admin-page) .request-heading h2 {
     font-size: 13px;
   }
 
-  .student-details {
+  :where(.admin-page) .student-details {
     gap: 10px 8px;
     padding-right: 10px;
     padding-left: 10px;
   }
 
-  .student-details strong {
+  :where(.admin-page) .student-details strong {
     font-size: 8px;
   }
 
-  .policy-note {
+  :where(.admin-page) .policy-note {
     align-items: flex-start;
     margin: 0 10px;
   }
 
-  .equipment-section-heading {
+  :where(.admin-page) .equipment-section-heading {
     align-items: flex-start;
     flex-direction: column;
   }
 
-  .equipment-section-heading > span {
+  :where(.admin-page) .equipment-section-heading > span {
     text-align: left;
   }
 
-  .decision-fields {
+  :where(.admin-page) .decision-fields {
     grid-template-columns: minmax(0, 1fr);
     gap: 10px;
   }
 
-  .review-footer {
+  :where(.admin-page) .review-footer {
     flex-direction: column;
     padding: 10px;
   }
 
-  .next-step,
-  .decision-actions {
+  :where(.admin-page) .next-step,
+  :where(.admin-page) .decision-actions {
     width: 100%;
     justify-items: stretch;
   }
 
-  .next-step > div,
-  .decision-actions > div {
+  :where(.admin-page) .next-step > div,
+  :where(.admin-page) .decision-actions > div {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .decision-actions > span {
+  :where(.admin-page) .decision-actions > span {
     text-align: left;
   }
 
-  .decision-actions > div {
+  :where(.admin-page) .decision-actions > div {
     display: grid;
     grid-template-columns: 1fr 1fr;
   }
 
-  .prepare-button,
-  .approve-button,
-  .disapprove-button {
+  :where(.admin-page) .prepare-button,
+  :where(.admin-page) .approve-button,
+  :where(.admin-page) .disapprove-button {
     min-height: 34px;
     white-space: normal;
   }

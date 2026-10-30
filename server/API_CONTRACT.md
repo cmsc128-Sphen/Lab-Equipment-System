@@ -54,5 +54,5 @@ For a disapproval, send `"decision": "disapprove"`, a non-empty
 - Sending real email notifications.
 - Firebase initialization, staff authentication, and authorization middleware.
 
-The Express scaffold currently exposes only `GET /api/health`. Other `/api`
+The integrated Express scaffold exposes `GET /health` and `GET /api/health`. Other `/api`
 routes return an explicit `NOT_FOUND` response; they do not simulate success.

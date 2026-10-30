@@ -1,9 +1,9 @@
-.app-shell {
+:where(.student-inventory-page) .app-shell {
   min-height: 100vh;
   background: #fff;
 }
 
-.topbar {
+:where(.student-inventory-page) .topbar {
   display: flex;
   height: 58px;
   align-items: center;
@@ -13,7 +13,7 @@
   color: #fff;
 }
 
-.brand {
+:where(.student-inventory-page) .brand {
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -22,8 +22,8 @@
   text-decoration: none;
 }
 
-.brand-mark,
-.profile-avatar {
+:where(.student-inventory-page) .brand-mark,
+:where(.student-inventory-page) .profile-avatar {
   display: grid;
   width: 30px;
   height: 30px;
@@ -32,12 +32,12 @@
   border-radius: 50%;
 }
 
-.top-nav-link {
+:where(.student-inventory-page) .top-nav-link {
   color: #fff;
   font-size: 12px;
 }
 
-.profile {
+:where(.student-inventory-page) .profile {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -45,12 +45,12 @@
   font-size: 12px;
 }
 
-.workspace {
+:where(.student-inventory-page) .workspace {
   display: flex;
   min-height: calc(100vh - 58px);
 }
 
-.sidebar {
+:where(.student-inventory-page) .sidebar {
   width: 220px;
   flex: 0 0 220px;
   padding: 14px 12px;
@@ -58,14 +58,14 @@
   background: #fff;
 }
 
-.sidebar-heading {
+:where(.student-inventory-page) .sidebar-heading {
   margin: 0 0 10px;
   color: #111;
   font-size: 12px;
   font-weight: 700;
 }
 
-.sidebar-link {
+:where(.student-inventory-page) .sidebar-link {
   display: flex;
   min-height: 28px;
   align-items: center;
@@ -74,19 +74,19 @@
   font-size: 12px;
 }
 
-.sidebar-link.selected {
+:where(.student-inventory-page) .sidebar-link.selected {
   font-weight: 600;
 }
 
-.sidebar-count {
+:where(.student-inventory-page) .sidebar-count {
   margin-left: auto;
 }
 
-.category-heading {
+:where(.student-inventory-page) .category-heading {
   margin-top: 20px;
 }
 
-.category-list {
+:where(.student-inventory-page) .category-list {
   display: grid;
   gap: 5px;
   margin: 0;
@@ -94,7 +94,7 @@
   list-style: none;
 }
 
-.category-list li {
+:where(.student-inventory-page) .category-list li {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -102,21 +102,21 @@
   font-size: 11px;
 }
 
-.category-dot {
+:where(.student-inventory-page) .category-dot {
   width: 11px;
   height: 11px;
   border: 1px solid #777;
   border-radius: 2px;
 }
 
-.sidebar-footer {
+:where(.student-inventory-page) .sidebar-footer {
   margin-top: 24px;
   color: #666;
   font-size: 10px;
 }
 
-.status-dot,
-.status-indicator {
+:where(.student-inventory-page) .status-dot,
+:where(.student-inventory-page) .status-indicator {
   display: inline-block;
   width: 7px;
   height: 7px;
@@ -125,13 +125,13 @@
   background: #42804e;
 }
 
-.main-content {
+:where(.student-inventory-page) .main-content {
   width: 100%;
   min-width: 0;
   padding: 18px 14px;
 }
 
-.page-heading {
+:where(.student-inventory-page) .page-heading {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -139,25 +139,25 @@
   margin-bottom: 14px;
 }
 
-.eyebrow {
+:where(.student-inventory-page) .eyebrow {
   display: none;
 }
 
-.page-heading h1 {
+:where(.student-inventory-page) .page-heading h1 {
   margin: 0;
   color: #111;
   font-size: 20px;
   font-weight: 500;
 }
 
-.page-description,
-.toolbar-description {
+:where(.student-inventory-page) .page-description,
+:where(.student-inventory-page) .toolbar-description {
   margin-top: 2px;
   color: #444;
   font-size: 11px;
 }
 
-.inventory-summary {
+:where(.student-inventory-page) .inventory-summary {
   display: flex;
   align-items: baseline;
   gap: 5px;
@@ -165,20 +165,20 @@
   font-size: 11px;
 }
 
-.summary-number {
+:where(.student-inventory-page) .summary-number {
   color: #222;
   font-weight: 700;
 }
 
-.summary-label {
+:where(.student-inventory-page) .summary-label {
   font-size: 11px;
 }
 
-.catalogue-panel {
+:where(.student-inventory-page) .catalogue-panel {
   background: #fff;
 }
 
-.catalogue-toolbar {
+:where(.student-inventory-page) .catalogue-toolbar {
   display: flex;
   min-height: 72px;
   align-items: center;
@@ -187,14 +187,14 @@
   padding: 10px 0;
 }
 
-.catalogue-toolbar h2 {
+:where(.student-inventory-page) .catalogue-toolbar h2 {
   margin: 0;
   color: #111;
   font-size: 16px;
   font-weight: 500;
 }
 
-.search-field {
+:where(.student-inventory-page) .search-field {
   display: flex;
   width: min(390px, 55%);
   height: 30px;
@@ -204,7 +204,7 @@
   border: 1px solid #ccc;
 }
 
-.search-icon {
+:where(.student-inventory-page) .search-icon {
   width: 14px;
   height: 14px;
   fill: none;
@@ -212,7 +212,7 @@
   stroke-width: 1.5;
 }
 
-.search-field input {
+:where(.student-inventory-page) .search-field input {
   width: 100%;
   min-width: 0;
   border: 0;
@@ -220,23 +220,23 @@
   font-size: 11px;
 }
 
-.search-shortcut {
+:where(.student-inventory-page) .search-shortcut {
   display: none;
 }
 
-.table-scroll {
+:where(.student-inventory-page) .table-scroll {
   overflow-x: auto;
 }
 
-.inventory-table {
+:where(.student-inventory-page) .inventory-table {
   width: 100%;
   border: 1px solid #888;
   border-collapse: collapse;
   text-align: left;
 }
 
-.inventory-table th,
-.inventory-table td {
+:where(.student-inventory-page) .inventory-table th,
+:where(.student-inventory-page) .inventory-table td {
   height: 34px;
   padding: 4px 8px;
   border: 1px solid #999;
@@ -245,49 +245,49 @@
   white-space: nowrap;
 }
 
-.inventory-table th {
+:where(.student-inventory-page) .inventory-table th {
   height: 36px;
   background: #f3f3f3;
   font-weight: 600;
 }
 
-.item-cell {
+:where(.student-inventory-page) .item-cell {
   display: flex;
   align-items: center;
   gap: 7px;
 }
 
-.item-icon {
+:where(.student-inventory-page) .item-icon {
   display: none;
 }
 
-.item-cell > div {
+:where(.student-inventory-page) .item-cell > div {
   display: flex;
   align-items: baseline;
   gap: 7px;
 }
 
-.item-name,
-.stock-value {
+:where(.student-inventory-page) .item-name,
+:where(.student-inventory-page) .stock-value {
   color: #222;
   font-weight: 400;
 }
 
-.item-code {
+:where(.student-inventory-page) .item-code {
   color: #777;
   font-size: 9px;
 }
 
-.category-pill {
+:where(.student-inventory-page) .category-pill {
   color: #333;
 }
 
-.type-cell {
+:where(.student-inventory-page) .type-cell {
   color: #333 !important;
   text-transform: capitalize;
 }
 
-.status-pill {
+:where(.student-inventory-page) .status-pill {
   display: inline-flex;
   align-items: center;
   padding: 3px 7px;
@@ -295,30 +295,30 @@
   font-size: 10px;
 }
 
-.status-pill.in-stock {
+:where(.student-inventory-page) .status-pill.in-stock {
   background: #205b32;
   color: #fff;
 }
 
-.status-pill.out-of-stock {
+:where(.student-inventory-page) .status-pill.out-of-stock {
   background: #eee;
   color: #555;
 }
 
-.status-pill.out-of-stock .status-indicator {
+:where(.student-inventory-page) .status-pill.out-of-stock .status-indicator {
   background: #999;
 }
 
-.table-message {
+:where(.student-inventory-page) .table-message {
   height: 90px !important;
   text-align: center;
 }
 
-.error-message {
+:where(.student-inventory-page) .error-message {
   color: #a33a3a !important;
 }
 
-.table-footer {
+:where(.student-inventory-page) .table-footer {
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -328,40 +328,40 @@
 }
 
 @media (max-width: 700px) {
-  .topbar {
+  :where(.student-inventory-page) .topbar {
     gap: 12px;
     padding: 0 12px;
   }
 
-  .brand {
+  :where(.student-inventory-page) .brand {
     font-size: 11px;
   }
 
-  .sidebar {
+  :where(.student-inventory-page) .sidebar {
     width: 150px;
     flex-basis: 150px;
     padding-inline: 8px;
   }
 
-  .main-content {
+  :where(.student-inventory-page) .main-content {
     padding: 12px 8px;
   }
 
-  .catalogue-toolbar {
+  :where(.student-inventory-page) .catalogue-toolbar {
     align-items: flex-start;
     flex-direction: column;
     padding: 10px 0;
   }
 
-  .search-field {
+  :where(.student-inventory-page) .search-field {
     width: 100%;
   }
 
-  .inventory-table {
+  :where(.student-inventory-page) .inventory-table {
     min-width: 620px;
   }
 
-  .table-footer {
+  :where(.student-inventory-page) .table-footer {
     flex-direction: column;
   }
 }

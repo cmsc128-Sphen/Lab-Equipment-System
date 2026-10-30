@@ -1,25 +1,36 @@
-:root {
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-weight: 400;
-  color: #475467;
-  background: #fff;
+.page-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    padding: 12px 20px;
+    color: #fff;
+    background: #294438;
+    font: 14px/1.5 system-ui, sans-serif;
 }
 
-* {
-  box-sizing: border-box;
+.page-navigation-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
 }
 
-body {
-  min-width: 320px;
-  min-height: 100vh;
-  margin: 0;
+.page-navigation a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
 }
 
-button,
-input {
-  font: inherit;
+.page-navigation a.active {
+    border-bottom-color: #fff;
+}
+
+.missing-page {
+    padding: 32px;
+}
+
+.student-inventory-page .app-shell {
+    color: #475467;
+    font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
 }

@@ -21,8 +21,9 @@ client/src/
   index.css          Coordinated global styles
 ```
 
-The empty directories contain placeholders only. No other person's feature is
-implemented here. The Vite starter remains at the shared app entry for now.
+The merged application now routes this feature at /student/booking, alongside
+student inventory and admin review. See the [integration report](../../../../docs/ui-integration-report.md)
+for the current routes, mock-mode behavior and remaining backend work.
 When implementing a real student homepage, place it in `student/home/` and have
 Marc import it into `App.jsx`; do not build a complete homepage inside App.
 
