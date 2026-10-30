@@ -1,45 +1,51 @@
-const path = require('node:path');
-
-require('dotenv').config({
-    path: path.join(__dirname, '.env'),
-    quiet: true,
-});
-
-const express = require('express');
+const app = require('./app');
 const { getDatabase } = require('./src/database');
-
-const app = express();
-
-app.use(express.json({ limit: '100kb' }));
-
-// Health checks only report HTTP availability, not Firestore connectivity.
-app.get('/health', (_req, res) => {
-    res.json({
-        status: 'ok',
-        databaseConnectivity: 'not_checked',
-    });
-});
 
 if (require.main === module) {
     try {
-        // INFO before startup; database access has not been attempted yet.
+        // INFO before service initialization; no database request has been sent.
         console.log('[INFO] server.starting');
 
-        getDatabase();
+        if (process.env.FIREBASE_PROJECT_ID) {
+            getDatabase();
+        } else {
+            // WARN for intentional prototype-only startup; database operations still require configuration.
+            console.warn('[WARN] server.database_not_configured nextAction=serve_prototype_only');
+        }
 
         const port = Number(process.env.PORT || 3000);
         const server = app.listen(port, () => {
-            // INFO after the listener is ready; port identifies the local service.
+            // INFO after the listener starts; the port is safe service metadata.
             console.log(`[INFO] server.listening port=${server.address().port}`);
         });
 
         server.on('error', () => {
-            // CRITICAL when the listener fails; stop without exposing environment details.
+            // CRITICAL when listening fails; stop without exposing environment details.
             console.error('[CRITICAL] server.listen_failed nextAction=stop_service');
             process.exitCode = 1;
         });
+
+        function shutdown() {
+            // INFO when a termination signal is received; stop accepting requests.
+            console.log('[INFO] server.shutdown_started');
+            server.close((error) => {
+                if (error) {
+                    // ERROR on failed shutdown; the process exits unsuccessfully.
+                    console.error('[ERROR] server.shutdown_failed nextAction=stop_service');
+                    process.exitCode = 1;
+                    return;
+                }
+
+                // INFO after active requests have finished and the listener has closed.
+                console.log('[INFO] server.shutdown_completed');
+                process.exit(0);
+            });
+        }
+
+        process.once('SIGINT', shutdown);
+        process.once('SIGTERM', shutdown);
     } catch {
-        // CRITICAL for startup failure; configuration must be corrected before retrying.
+        // CRITICAL when configuration prevents startup; never print raw credential errors.
         console.error('[CRITICAL] server.startup_failed check=server_env_and_application_credentials nextAction=stop_service');
         process.exitCode = 1;
     }

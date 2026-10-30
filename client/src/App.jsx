@@ -1,12 +1,9 @@
+import AdminDashboard from './admin/AdminDashboard.jsx'
 import InventoryPage from './student/InventoryPage.jsx'
-import './App.css'
 
 function App() {
-  if (window.location.pathname.replace(/\/+$/, '') === '/inventory') {
-    return <InventoryPage />
-  }
-
-  return null
+    const pathname = window.location.pathname.replace(/\/+$/, '')
+    return pathname === '/inventory/admin' ? <AdminDashboard /> : <InventoryPage />
 }
 
 export default App
