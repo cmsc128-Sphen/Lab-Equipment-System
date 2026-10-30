@@ -19,6 +19,23 @@ link:`https://www.figma.com/design/ZDwpMP3tRk4zyvx14o6V6f/142-Lab-Final-Project?
 | Backend | Node.js & Express.js |
 | Database | Firebase |
 
+## Sprint 2 prototype
+
+The current client prototype focuses on Marc's lab-staff booking-review slice:
+searching and filtering sample bookings, checking stock, editing allocations,
+adding staff notes, and recording an approve/disapprove decision in React state.
+The review layout follows the supplied booking-review wireframe.
+
+The prototype does **not** persist changes, connect to Firebase, authenticate
+staff, or send email. The Express server currently provides a health check
+only. Proposed booking-review endpoints and the deferred parts of this slice
+are documented in [`server/API_CONTRACT.md`](./server/API_CONTRACT.md).
+
+To run the client, follow the client setup below and use the booking list on the
+left to select a sample request. Changes reset on refresh. The
+“Mark ready for pickup” action is intentionally disabled; pickup preparation,
+return verification, and real notifications are not part of this prototype.
+
 ## Requirements
 
 - Git
