@@ -1,3 +1,6 @@
+// To view this catalogue in the inventory page, set USE_MOCK_DATA=true in
+// client/.env.local, run `npm run dev` from client, then open
+// http://localhost:5173/inventory.
 const inventory = [
   ['microscope-compound', 'Compound Microscope', 'equipment', 'microscopes', 'Microscopes', 'pcs', 1200, 0, 200, 0],
   ['microscope-dissecting', 'Dissecting Microscope', 'equipment', 'microscopes', 'Microscopes', 'pcs', 800, 0, 100, 0],
