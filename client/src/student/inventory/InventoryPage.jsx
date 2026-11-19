@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { getItems } from '../../data/items.js'
 import './InventoryPage.css'
 
@@ -8,6 +8,9 @@ function InventoryPage() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [query, setQuery] = useState('')
+  const [itemsPerPage, setItemsPerPage] = useState(15)
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     let active = true
@@ -32,6 +35,24 @@ function InventoryPage() {
   }, [])
 
   const categories = [...new Set(items.map((item) => item.categoryName))]
+  const visibleItems = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase()
+    if (!normalizedQuery) return items
+
+    return items.filter((item) =>
+      [item.name, item.code, item.categoryName, item.type].some((value) =>
+        value.toLowerCase().includes(normalizedQuery),
+      ),
+    )
+  }, [items, query])
+  const totalPages = Math.max(1, Math.ceil(visibleItems.length / itemsPerPage))
+  const safeCurrentPage = Math.min(currentPage, totalPages)
+  const pagedItems = visibleItems.slice(
+    (safeCurrentPage - 1) * itemsPerPage,
+    safeCurrentPage * itemsPerPage,
+  )
+  const rangeStart = visibleItems.length ? (safeCurrentPage - 1) * itemsPerPage + 1 : 0
+  const rangeEnd = Math.min(safeCurrentPage * itemsPerPage, visibleItems.length)
 
   return (
     <div className="app-shell">
@@ -100,8 +121,34 @@ function InventoryPage() {
                   <circle cx="8.5" cy="8.5" r="5.5" />
                   <path d="m13 13 4 4" />
                 </svg>
-                <input type="search" placeholder="Search inventory" />
+                <input
+                  type="search"
+                  placeholder="Search inventory"
+                  onChange={(event) => {
+                    setQuery(event.target.value)
+                    setCurrentPage(1)
+                  }}
+                  value={query}
+                />
                 <span className="search-shortcut" aria-hidden="true">⌕</span>
+              </label>
+            </div>
+
+            <div className="inventory-list-controls">
+              <label className="items-per-page">
+                <span>Items per page</span>
+                <select
+                  aria-label="Items per page"
+                  onChange={(event) => {
+                    setItemsPerPage(Number(event.target.value))
+                    setCurrentPage(1)
+                  }}
+                  value={itemsPerPage}
+                >
+                  <option value="15">15</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                </select>
               </label>
             </div>
 
@@ -127,12 +174,14 @@ function InventoryPage() {
                       <td className="table-message error-message" colSpan="5">{error}</td>
                     </tr>
                   )}
-                  {!loading && !error && items.length === 0 && (
+                  {!loading && !error && visibleItems.length === 0 && (
                     <tr>
-                      <td className="table-message" colSpan="5">No inventory items found.</td>
+                      <td className="table-message" colSpan="5">
+                        {query ? 'No inventory items match this search.' : 'No inventory items found.'}
+                      </td>
                     </tr>
                   )}
-                  {!loading && !error && items.map((item) => (
+                  {!loading && !error && pagedItems.map((item) => (
                     <tr key={item.id}>
                       <td>
                         <div className="item-cell">
@@ -165,12 +214,31 @@ function InventoryPage() {
             </div>
             <footer className="table-footer">
               <span>
-                Showing <strong>{loading || error ? 0 : items.length}</strong> items
+                Showing <strong>{loading || error ? 0 : rangeStart}–{loading || error ? 0 : rangeEnd}</strong> of <strong>{loading || error ? 0 : visibleItems.length}</strong> items
               </span>
-              <span className="table-footer-note">
-                Stock quantities reflect currently available units.
-              </span>
+              <div className="inventory-pagination" aria-label="Inventory pagination">
+                <button
+                  aria-label="Previous page"
+                  disabled={loading || Boolean(error) || safeCurrentPage === 1}
+                  onClick={() => setCurrentPage(safeCurrentPage - 1)}
+                  type="button"
+                >
+                  ‹
+                </button>
+                <span>Page {safeCurrentPage} of {totalPages}</span>
+                <button
+                  aria-label="Next page"
+                  disabled={loading || Boolean(error) || safeCurrentPage === totalPages}
+                  onClick={() => setCurrentPage(safeCurrentPage + 1)}
+                  type="button"
+                >
+                  ›
+                </button>
+              </div>
             </footer>
+            <p className="table-footer-note">
+              Stock quantities reflect currently available units.
+            </p>
           </section>
         </main>
       </div>
