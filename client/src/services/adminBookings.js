@@ -123,6 +123,7 @@ export function createAdminBookingClient({ getAccessToken, fetchImpl = fetch }) 
 
                 for (const row of result.bookings) {
                     if (seen.has(row.id)) throw new Error('The booking queue changed. Refresh bookings.')
+                    if (row.status !== 'pending') throw new Error('The Pending queue returned a non-pending request.')
 
                     seen.add(row.id)
 
@@ -135,27 +136,6 @@ export function createAdminBookingClient({ getAccessToken, fetchImpl = fetch }) 
             }
 
             throw new Error('The booking queue could not be loaded completely. Refresh bookings.')
-        },
-
-        async decide(booking, action) {
-            const allocations = booking.items.map((item) => {
-                const scaled = item.allocated * 100
-
-                const rounded = Math.round(scaled)
-
-                if (!Number.isFinite(scaled) || Math.abs(scaled - rounded) > 0.0001
-                    || !Number.isSafeInteger(rounded) || rounded < 0
-                    || (item.unit === 'pcs' && rounded % 100 !== 0)) {
-                    throw new Error('Use whole quantities for pieces and at most two decimal places for chemicals.')
-                }
-
-                return { id: item.id, quantity: rounded }
-            })
-
-            return request(`/${booking.id}/decision`, {
-                method: 'POST',
-                body: JSON.stringify({ action, updatedAt: booking.updatedAt, allocations, staffNotes: booking.staffNotes, denialReason: booking.denialReason }),
-            })
         },
     }
 }

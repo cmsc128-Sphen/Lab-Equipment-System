@@ -69,31 +69,16 @@ test('incomplete queues and upstream errors never fall back to demo bookings', a
     await assert.rejects(forbidden.load(), /Staff only/)
 })
 
-test('decision writes preserve the version and scale chemical allocations exactly once', async () => {
-    let payload
+test('the Pending queue rejects rows from another status', async () => {
+    const row = bookingRow()
+    row.status = 'approved'
 
     const client = createAdminBookingClient({
         getAccessToken: async () => 'session',
-        fetchImpl: async (_url, options) => {
-            payload = JSON.parse(options.body)
-
-            return new Response(null, { status: 204 })
-        },
+        fetchImpl: async () => json({ bookings: [row], total: 1, page: 1, truncated: false }),
     })
 
-    const booking = toAdminBooking(bookingRow())
-
-    booking.items[0].allocated = 150.5
-
-    await client.decide(booking, 'approved')
-
-    assert.equal(payload.allocations[0].quantity, 15050)
-
-    assert.equal(payload.updatedAt, booking.updatedAt)
-
-    booking.items[0].unit = 'pcs'
-
-    await assert.rejects(client.decide(booking, 'approved'), /whole quantities/)
+    await assert.rejects(client.load(), /non-pending/)
 })
 
 test('missing sessions do not issue an unauthorized fetch', async () => {

@@ -13,7 +13,7 @@
 
 ## Current status
 
-The student inventory page and booking item picker load the saved Supabase catalogue through the authenticated backend. Staff booking review loads saved requests, item quantities and available stock. Approval, disapproval and pickup-readiness decisions are persisted. Student booking submission and email delivery are not connected yet.
+The student inventory page and booking item picker load the saved Supabase catalogue through the authenticated backend. The staff booking queue reads saved Pending requests and their item quantities/available stock. Approval, disapproval, allocations, pickup readiness and email are deferred in the live queue. Student booking submission is not connected yet.
 
 The backend exposes HTTP health endpoints, a Supabase API connection check, the account profile endpoint, authenticated `GET /api/items`, and staff booking review endpoints. Unused routes return 404.
 
@@ -79,12 +79,10 @@ Both screens use `client/src/data/items.js`. It loads every catalogue page befor
 
 Sign in with an active, verified `admin` or `lab_aid` account and open `/inventory/admin` (`/admin/bookings` redirects there). Student registrations remain students and cannot access this page or its APIs. The disabled mock identities are reference records, not login accounts.
 
-- `GET /api/admin/bookings?page=1` returns 200 requests per page with borrower snapshots, request lines and current available stock. The page loads the complete queue before local search and filtering, with a 5,000-request limit. Loading failures show an error without demo fallback; use **Refresh bookings** to retry.
-- `POST /api/admin/bookings/:id/decision` accepts `action` (`approved`, `denied`, `ready`), the original `updatedAt`, `staffNotes`, `denialReason`, and approval `allocations` containing request-line `id` and integer-hundredths `quantity`.
-- Approval atomically locks the request and stock rows, validates allocations, moves stock from available to reserved, and appends reservation ledger entries. Stale forms, insufficient stock and repeated decisions are rejected. Disapproval requires a reason. Ready-for-pickup only follows approval and does not change stock.
-- Decisions record the authenticated reviewer. Email delivery is unavailable; the page states that no email was sent. Refresh after a rejected or uncertain save before trying again.
+- `GET /api/admin/bookings?page=1` returns 200 Pending requests per page with borrower snapshots, request lines and current available stock. The page loads the complete Pending queue before local search, with a 5,000-request limit. Loading, empty-queue and read-failure states are distinct; use **Refresh bookings** to retry.
+- `POST /api/admin/bookings/:id/decision` is authenticated for staff but returns `501 BOOKING_DECISIONS_DEFERRED`; this sprint's live queue is read-only and cannot approve, disapprove, allocate stock or mark requests ready.
 
-[database/admin-bookings.sql](database/admin-bookings.sql) is the additive review-function definition already applied to the connected project. Apply it after the baseline when initializing another project. Only the guarded review operation can write; authenticated users retain read-only table grants. No service key is needed in the frontend or review API.
+[database/admin-bookings.sql](database/admin-bookings.sql) defines the guarded database review function; it is not called by the live queue API while decisions are deferred. The queue uses the authenticated user's Supabase session and does not use a service key.
 
 ## Database foundation
 

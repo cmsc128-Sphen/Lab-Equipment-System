@@ -95,6 +95,8 @@ test('staff queue reads snapshots and separately paged lines with the user sessi
 
     assert.match(queries[0].url.searchParams.get('select'), /requester_snapshot/);
 
+    assert.equal(queries[0].url.searchParams.get('status'), 'eq.pending');
+
     assert.match(queries[1].url.searchParams.get('request_id'), new RegExp(bookingId));
 
     assert.equal(new Headers(queries[0].init.headers).get('Authorization'), 'Bearer staff-session');
@@ -114,38 +116,24 @@ test('empty queues are valid and database failures expose no private provider de
     assert.doesNotMatch(await response.text(), /Private provider/);
 });
 
-test('invalid pages and fractional hundredths are rejected before database work', async (context) => {
+test('invalid pages are rejected before database work', async (context) => {
     const { url, queries } = await fixture(context);
 
     assert.equal((await fetch(`${url}?page=0`)).status, 400);
 
-    const response = await fetch(`${url}/${bookingId}/decision`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(decision({ allocations: [{ id: lineId, quantity: 1.5 }] })) });
-
-    assert.equal(response.status, 400);
-
     assert.equal(queries.length, 0);
 });
 
-test('approval uses one RPC and preserves version, allocation, and safe conflict response', async (context) => {
+test('staff decision endpoint clearly defers changes without calling Supabase', async (context) => {
     const { url, queries } = await fixture(context);
 
-    const response = await fetch(`${url}/${bookingId}/decision`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(decision()) });
+    const response = await fetch(`${url}/${bookingId}/decision`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(decision()),
+    });
 
-    assert.equal(response.status, 204);
-
-    assert.equal(queries.length, 1);
-
-    const payload = JSON.parse(queries[0].init.body);
-
-    assert.equal(payload.p_allocations[0].quantity, 15050);
-
-    assert.equal(payload.p_expected_updated_at, decision().updatedAt);
-
-    const conflict = await fixture(context, { decisionError: 'BOOKING_CONFLICT' });
-
-    const rejected = await fetch(`${conflict.url}/${bookingId}/decision`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(decision()) });
-
-    assert.equal(rejected.status, 409);
-
-    assert.match((await rejected.json()).error.message, /Refresh/);
+    assert.equal(response.status, 501);
+    assert.equal((await response.json()).error.code, 'BOOKING_DECISIONS_DEFERRED');
+    assert.equal(queries.length, 0);
 });
