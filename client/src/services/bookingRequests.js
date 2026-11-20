@@ -11,7 +11,7 @@ export function createRequestSubmitter({ endpoint, getAccessToken, fetchImpl = f
     if (response.status === 401) throw new Error('Your session has expired. Sign in again before submitting. Your entries are still here.')
     if (!response.ok) {
       const data = await response.json().catch(() => null)
-      throw new Error(typeof data?.message === 'string' ? data.message : 'The request could not be saved. Your entries are still here; please try again.')
+      throw new Error(typeof data?.error?.message === 'string' ? data.error.message : typeof data?.message === 'string' ? data.message : 'The request could not be saved. Your entries are still here; please try again.')
     }
     return response.json()
   }
