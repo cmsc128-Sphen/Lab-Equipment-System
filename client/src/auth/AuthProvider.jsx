@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { AuthContext } from './AuthContext.js'
 
 import { getSupabase } from './supabase.js'
 
 import { loadAccount } from './loadAccount.js'
+import { clearInventoryCart } from '../student/inventoryCart.js'
 
 export default function AuthProvider({ children }) {
     const [account, setAccount] = useState({
@@ -15,6 +16,8 @@ export default function AuthProvider({ children }) {
     })
 
     const [retry, setRetry] = useState(0)
+    const activeUserId = useRef(null)
+    const cartCleanupFailed = useRef(false)
 
     useEffect(() => {
         let active = true
@@ -33,6 +36,12 @@ export default function AuthProvider({ children }) {
             const listener = supabase.auth.onAuthStateChange((_event, session) => {
                 if (!active) {
                     return
+                }
+
+                const signedOutUserId = session ? null : activeUserId.current
+                activeUserId.current = session?.user.id ?? null
+                if (session) {
+                    cartCleanupFailed.current = false
                 }
 
                 version += 1
@@ -55,6 +64,19 @@ export default function AuthProvider({ children }) {
                 })
 
                 if (!session) {
+                    if (signedOutUserId) {
+                        try {
+                            clearInventoryCart(signedOutUserId)
+                        } catch {
+                            cartCleanupFailed.current = true
+                            setAccount({
+                                session: null,
+                                profile: null,
+                                loading: false,
+                                error: 'You are signed out, but your saved booking cart could not be cleared from this browser.',
+                            })
+                        }
+                    }
                     return
                 }
 
@@ -88,8 +110,12 @@ export default function AuthProvider({ children }) {
                                         session: null,
                                         profile: null,
                                         loading: false,
-                                        error: signOutFailed
-                                            ? 'Your session expired. Sign in again; the saved session could not be cleared.'
+                                        error: signOutFailed && cartCleanupFailed.current
+                                            ? 'Your session expired, and this browser could not clear your saved session or booking cart.'
+                                            : signOutFailed
+                                                ? 'Your session expired. Sign in again; the saved session could not be cleared.'
+                                                : cartCleanupFailed.current
+                                                    ? 'Your session expired, but your saved booking cart could not be cleared from this browser.'
                                             : 'Your session expired. Sign in again.',
                                     })
                                 }
@@ -143,10 +169,27 @@ export default function AuthProvider({ children }) {
     }
 
     async function signOut() {
+        const userId = account.profile?.id ?? activeUserId.current
         const { error } = await getSupabase().auth.signOut({ scope: 'local' })
 
         if (error) {
             throw new Error('Unable to sign out. Try again.')
+        }
+
+        if (userId) {
+            try {
+                clearInventoryCart(userId)
+                cartCleanupFailed.current = false
+            } catch {
+                cartCleanupFailed.current = true
+                setAccount({
+                    session: null,
+                    profile: null,
+                    loading: false,
+                    error: 'You are signed out, but your saved booking cart could not be cleared from this browser.',
+                })
+                throw new Error('You are signed out, but your saved booking cart could not be cleared from this browser.')
+            }
         }
 
         setAccount({ session: null, profile: null, loading: false, error: '' })

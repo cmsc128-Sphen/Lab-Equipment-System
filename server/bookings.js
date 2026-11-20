@@ -208,6 +208,7 @@ function createBookingsRouter(authenticate = createAuthenticationMiddleware()) {
 
             const { data, count, error } = await request.auth.supabase.from('requests')
                 .select(requestColumns, { count: 'exact' })
+                .eq('status', 'pending')
                 .order('created_at', { ascending: false }).order('id')
                 .range((page - 1) * 200, page * 200 - 1).abortSignal(signal);
 
@@ -248,55 +249,12 @@ function createBookingsRouter(authenticate = createAuthenticationMiddleware()) {
     });
 
     router.post('/admin/bookings/:id/decision', async (request, response) => {
-        const { action, updatedAt, allocations, staffNotes = '', denialReason = '' } = request.body || {};
-
-        const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-        const validAllocations = Array.isArray(allocations) && allocations.length <= 1000
-            && allocations.every((line) => line && uuid.test(line.id) && Number.isSafeInteger(line.quantity) && line.quantity >= 0);
-
-        if (!uuid.test(request.params.id) || !['approved', 'denied', 'ready'].includes(action)
-            || typeof updatedAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T/.test(updatedAt) || !Number.isFinite(Date.parse(updatedAt))
-            || typeof staffNotes !== 'string' || staffNotes.length > 2000
-            || typeof denialReason !== 'string' || denialReason.length > 2000
-            || (action === 'approved' && !validAllocations)) {
-            return response.status(400).json({ error: { code: 'BOOKING_INVALID', message: 'Check the decision and item quantities.' } });
-        }
-
-        // INFO before the atomic RPC; action is a validated status, never free-form user content.
-        console.log(`[INFO] bookings.decision_started action=${action}`);
-
-        try {
-            const { error } = await request.auth.supabase.rpc('review_booking', {
-                p_request_id: request.params.id,
-                p_expected_updated_at: updatedAt,
-                p_action: action,
-                p_allocations: action === 'approved' ? allocations : [],
-                p_staff_notes: staffNotes,
-                p_denial_reason: denialReason,
-            }).abortSignal(AbortSignal.timeout(15000));
-
-            if (error) {
-                const known = decisionErrors[error.message];
-
-                if (!known) throw new Error('Decision unavailable');
-
-                // WARN for a rejected decision; caller must refresh or correct its input.
-                console.warn(`[WARN] bookings.decision_rejected code=${error.message} nextAction=refresh_or_correct`);
-
-                return response.status(known[0]).json({ error: { code: error.message, message: known[1] } });
-            }
-
-            // INFO only after the database commits the decision and stock changes.
-            console.log(`[INFO] bookings.decision_completed action=${action} email=unavailable`);
-
-            return response.status(204).end();
-        } catch {
-            // ERROR for uncertain upstream outcomes; refreshing is required before retrying.
-            console.error('[ERROR] bookings.decision_failed nextAction=refresh_before_retry');
-
-            return response.status(503).json({ error: { code: 'DECISION_UNAVAILABLE', message: 'Unable to confirm the decision. Refresh bookings before trying again.' } });
-        }
+        return response.status(501).json({
+            error: {
+                code: 'BOOKING_DECISIONS_DEFERRED',
+                message: 'Booking decisions are not available in the Pending queue.',
+            },
+        });
     });
 
     return router;

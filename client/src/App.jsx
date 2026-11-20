@@ -28,6 +28,16 @@ function AccountHome() {
     return <Navigate to={homeForRole(profile.role)} replace />
 }
 
+function StudentInventoryRoute() {
+    const { profile } = useAuth()
+
+    return (
+        <div className="student-inventory-page">
+            <InventoryPage key={profile.id} />
+        </div>
+    )
+}
+
 export function AppRoutes() {
     return (
         <>
@@ -39,9 +49,7 @@ export function AppRoutes() {
                     <Route path="/" element={<AccountHome />} />
                     <Route path="/inventory" element={<AccountHome />} />
                     <Route element={<RequireAuth roles={['student']} />}>
-                        <Route path="/inventory/students" element={
-                            <div className="student-inventory-page"><InventoryPage /></div>
-                        } />
+                        <Route path="/inventory/students" element={<StudentInventoryRoute />} />
                         <Route path="/student/booking" element={<StudentBookingRoute />} />
                     </Route>
                     <Route element={<RequireAuth roles={['lab_aid', 'admin']} />}>
