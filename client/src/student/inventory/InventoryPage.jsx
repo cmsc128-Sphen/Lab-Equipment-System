@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getItems } from '../../data/items.js'
+import { readInventoryCart, toInventoryCartItem, writeInventoryCart } from '../inventoryCart.js'
 import { filterInventoryItems } from './inventoryFilters.js'
 import './InventoryPage.css'
 
@@ -7,11 +8,20 @@ function InventoryPage() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [savedCart, setSavedCart] = useState(() => {
+    try {
+      return { items: readInventoryCart(), error: '' }
+    } catch (loadError) {
+      return { items: [], error: loadError.message }
+    }
+  })
   const [query, setQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [availability, setAvailability] = useState('All')
   const [itemsPerPage, setItemsPerPage] = useState(15)
   const [currentPage, setCurrentPage] = useState(1)
+  const cart = savedCart.items
+  const cartError = savedCart.error
 
   useEffect(() => {
     let active = true
@@ -38,6 +48,20 @@ function InventoryPage() {
       controller.abort()
     }
   }, [])
+
+  function toggleCartItem(item) {
+    const alreadyAdded = cart.some((cartItem) => cartItem.id === item.id)
+    const nextCart = alreadyAdded
+      ? cart.filter((cartItem) => cartItem.id !== item.id)
+      : [...cart, toInventoryCartItem(item)]
+
+    try {
+      writeInventoryCart(nextCart)
+      setSavedCart({ items: nextCart, error: '' })
+    } catch (saveError) {
+      setSavedCart((current) => ({ ...current, error: saveError.message }))
+    }
+  }
 
   const categories = [...new Set(items.map((item) => item.categoryName))].sort((left, right) =>
     left.localeCompare(right),
@@ -120,6 +144,9 @@ function InventoryPage() {
                   Browse available equipment, chemicals, and supplies.
                 </p>
               </div>
+              <span className="cart-count" aria-live="polite">
+                Booking cart · {cart.length} {cart.length === 1 ? 'item' : 'items'}
+              </span>
               <label className="search-field">
                 <svg viewBox="0 0 20 20" aria-hidden="true" className="search-icon">
                   <circle cx="8.5" cy="8.5" r="5.5" />
@@ -137,6 +164,8 @@ function InventoryPage() {
                 <span className="search-shortcut" aria-hidden="true">⌕</span>
               </label>
             </div>
+
+            {cartError && <p className="cart-error" role="alert">{cartError}</p>}
 
             <div className="inventory-list-controls">
               <label className="availability-filter">
@@ -239,14 +268,16 @@ function InventoryPage() {
                       </td>
                       <td>
                         <button
-                          aria-label={`Add ${item.name} to booking`}
+                          aria-label={`${cart.some((cartItem) => cartItem.id === item.id) ? 'Remove' : 'Add'} ${item.name} ${cart.some((cartItem) => cartItem.id === item.id) ? 'from' : 'to'} booking cart`}
                           className="add-to-booking-button"
-                          disabled
-                          title="Add to booking (coming soon)"
+                          aria-pressed={cart.some((cartItem) => cartItem.id === item.id)}
+                          disabled={Boolean(cartError) || item.stock.available <= 0}
+                          onClick={() => toggleCartItem(item)}
+                          title={cart.some((cartItem) => cartItem.id === item.id) ? 'Remove from booking cart' : 'Add to booking cart'}
                           type="button"
                         >
-                          <span aria-hidden="true">+</span>
-                          Add
+                          <span aria-hidden="true">{cart.some((cartItem) => cartItem.id === item.id) ? '✓' : '+'}</span>
+                          {cart.some((cartItem) => cartItem.id === item.id) ? 'Added' : 'Add'}
                         </button>
                       </td>
                     </tr>

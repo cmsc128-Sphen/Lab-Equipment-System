@@ -215,6 +215,12 @@
   font-weight: 650;
 }
 
+:where(.student-inventory-page) .cart-count {
+  flex: 0 0 auto;
+  color: var(--inv-muted);
+  font-size: 9px;
+}
+
 :where(.student-inventory-page) .search-field {
   display: flex;
   width: min(390px, 55%);
@@ -448,6 +454,24 @@
 
 :where(.student-inventory-page) .add-to-booking-button:hover:enabled {
   background: var(--inv-primary-soft);
+}
+
+:where(.student-inventory-page) .add-to-booking-button[aria-pressed='true'] {
+  color: #fff;
+  background: var(--inv-primary);
+}
+
+:where(.student-inventory-page) .add-to-booking-button[aria-pressed='true']:hover:enabled {
+  background: var(--inv-primary-hover);
+}
+
+:where(.student-inventory-page) .cart-error {
+  padding: 8px 13px;
+  margin: 0;
+  color: #8c3030;
+  background: #f8eeee;
+  border-bottom: 1px solid #e6caca;
+  font-size: 9px;
 }
 
 :where(.student-inventory-page) .table-message {
