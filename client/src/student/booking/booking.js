@@ -11,10 +11,10 @@ function validDate(value) {
 
 export function validateBooking(form, items, today = localDate()) {
   const errors = {}
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) errors.email = 'Enter a valid email address.'
   if (!form.studentId.trim()) errors.studentId = 'Enter your student ID.'
   if (!form.subject.trim()) errors.subject = 'Enter your subject.'
-  if (!form.purpose.trim()) errors.purpose = 'Enter the purpose of your request.'
+  if (!form.purpose) errors.purpose = 'Choose the purpose of your request.'
+  else if (form.purpose === 'Other' && !form.purposeOther?.trim()) errors.purposeOther = 'Describe the purpose of your request.'
   if (!validDate(form.borrowDate)) errors.borrowDate = 'Choose a valid borrowing date.'
   else if (form.borrowDate < today) errors.borrowDate = 'Borrowing date cannot be in the past.'
   if (!validDate(form.returnDate)) errors.returnDate = 'Choose a valid return date.'
@@ -37,8 +37,8 @@ export function validateBooking(form, items, today = localDate()) {
 // Proposed contract: the server must enforce identity, units and availability.
 export function bookingPayload(form, items) {
   return {
-    borrower: { email: form.email.trim(), studentId: form.studentId.trim() },
-    subject: form.subject.trim(), purpose: form.purpose.trim(),
+    borrower: { studentId: form.studentId.trim() },
+    subject: form.subject.trim(), purpose: form.purpose === 'Other' ? form.purposeOther.trim() : form.purpose,
     borrowDate: form.borrowDate, returnDate: form.returnDate,
     items: items.map(({ id, quantity, unit }) => ({ inventoryId: id, quantity: Number(quantity), unit })),
   }

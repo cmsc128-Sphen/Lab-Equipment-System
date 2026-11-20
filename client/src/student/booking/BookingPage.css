@@ -1,8 +1,25 @@
+/* One green family (OKLCH hue ~150) shared with the inventory topbar; neutrals tinted toward it. */
 .booking-app {
-  font: 16px/1.4 Inter, Arial, sans-serif;
-  letter-spacing: normal;
-  color: #111;
-  background: #fff;
+  --bk-brand: #4a6252;
+  --bk-primary: #2f6b47;
+  --bk-primary-hover: #275a3c;
+  --bk-primary-soft: #edf3ef;
+  --bk-canvas: #f5f6f5;
+  --bk-surface: #fff;
+  --bk-line: #d5dad7;
+  --bk-line-soft: #e7ebe8;
+  --bk-ink: #2b312e;
+  --bk-muted: #5f6763;
+  --bk-danger: #a33a3a;
+  --bk-danger-soft: #f8eeee;
+  --bk-note-ink: #625738;
+  --bk-note-bg: #faf8f1;
+  --bk-note-line: #e8e2cf;
+
+  min-height: 100vh;
+  color: var(--bk-ink);
+  background: var(--bk-canvas);
+  font: 13px/1.45 system-ui, 'Segoe UI', Roboto, Arial, sans-serif;
   color-scheme: light;
   text-align: left;
 }
@@ -20,13 +37,13 @@
   opacity: .55;
 }
 :where(.booking-app) :focus-visible {
-  outline: 3px solid #1e532d;
-  outline-offset: 4px;
+  outline: 2px solid var(--bk-primary);
+  outline-offset: 2px;
 }
 :where(.booking-app) h1, :where(.booking-app) h2 {
-  font-family: inherit;
+  margin: 0;
   color: inherit;
-  letter-spacing: normal;
+  font-family: inherit;
   line-height: 1.3;
 }
 :where(.booking-app) .booking-sr-only {
@@ -36,372 +53,582 @@
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0,0,0,0);
+  clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
 }
-.booking-app {
-  --header: #495d4f;
-  --green: #30802f;
-  --red: #922d2d;
-  --lime: #dde95c;
+
+/* Booking type is set ~1.2x the admin/inventory base, so 1.25 lands at the same on-screen size as their 1.5. */
+.student-booking-page {
+  zoom: 1.25;
 }
-:where(.booking-app) .booking-panel {
-  margin: 100px 1.7% 25px;
-  border: 1px solid #777;
-  min-height: 79vh;
-  box-shadow: 0 4px 4px #00000040;
-  padding: 30px 7.6% 60px;
+
+/* Topbar mirrors the student inventory header (its values x1.2 to offset the smaller zoom). */
+:where(.booking-app) .booking-topbar {
+  display: flex;
+  height: 70px;
+  align-items: center;
+  gap: 36px;
+  padding: 0 24px;
+  color: #fff;
+  background: var(--bk-brand);
+}
+:where(.booking-app) .booking-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 15.6px;
+}
+:where(.booking-app) .booking-brand-mark {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 55%);
+  border-radius: 50%;
+}
+:where(.booking-app) .booking-topbar-link {
+  font-size: 14.4px;
+}
+
+/* Page */
+:where(.booking-app) .booking-page {
+  width: min(100%, 1120px);
+  margin: 0 auto;
+  padding: 20px 24px 32px;
+}
+:where(.booking-app) .booking-heading {
+  margin-bottom: 14px;
+}
+:where(.booking-app) .booking-heading h1 {
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.3px;
+}
+:where(.booking-app) .booking-heading p {
+  margin: 4px 0 0;
+  color: var(--bk-muted);
+  font-size: 12px;
 }
 :where(.booking-app) .demo-notice {
-  font-size: 13px;
-  color: #555;
-  margin: 0 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 8px 10px;
+  color: var(--bk-note-ink);
+  background: var(--bk-note-bg);
+  border: 1px solid var(--bk-note-line);
+  border-radius: 4px;
+  font-size: 12px;
 }
-:where(.booking-app) .booking-columns {
+:where(.booking-app) .demo-notice > span {
   display: grid;
-  grid-template-columns: minmax(0, 572fr) minmax(0, 798fr);
-  gap: 12.5%;
+  width: 15px;
+  height: 15px;
+  flex: none;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 10px;
+}
+
+/* Cards */
+:where(.booking-app) .booking-workspace {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  gap: 16px;
   align-items: start;
 }
-:where(.booking-app) .borrower-fields {
-  padding-top: 18px;
-}
-:where(.booking-app) .booking-field {
-  margin-bottom: 30px;
+:where(.booking-app) .booking-card {
   min-width: 0;
+  background: var(--bk-surface);
+  border: 1px solid var(--bk-line);
+  border-radius: 6px;
+}
+:where(.booking-app) .card-heading {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--bk-line-soft);
+}
+:where(.booking-app) .card-heading h2 {
+  font-size: 16px;
+  font-weight: 650;
+}
+:where(.booking-app) .card-body {
+  padding: 16px;
+}
+
+/* Fields */
+:where(.booking-app) .booking-field {
+  min-width: 0;
+  margin-bottom: 14px;
 }
 :where(.booking-app) .booking-field label {
   display: block;
-  font-size: clamp(18px, 1.56vw, 30px);
-  margin-bottom: 7px;
+  margin-bottom: 5px;
+  font-size: 12px;
+  font-weight: 600;
 }
 :where(.booking-app) .booking-field input {
   width: 100%;
-  height: 51px;
-  background: white;
-  border: 1px solid #777;
-  border-radius: 0;
-  padding: 9px 12px;
-  color: #111;
   min-width: 0;
+  height: 36px;
+  padding: 0 10px;
+  color: var(--bk-ink);
+  background: var(--bk-surface);
+  border: 1px solid var(--bk-line);
+  border-radius: 4px;
+}
+:where(.booking-app) .booking-field input::placeholder {
+  color: #8a918d;
+}
+:where(.booking-app) .booking-field input:hover:enabled {
+  border-color: #b7beba;
+}
+:where(.booking-app) .booking-field input:focus-visible {
+  border-color: var(--bk-primary);
+  outline: 2px solid var(--bk-primary-soft);
+  outline-offset: 0;
 }
 :where(.booking-app) .booking-field input:read-only {
-  background: #f6f7f5;
+  background: var(--bk-canvas);
 }
 :where(.booking-app) input[aria-invalid='true'] {
-  border-color: var(--red);
-  outline: 1px solid var(--red);
+  border-color: var(--bk-danger);
 }
 :where(.booking-app) .purpose-input {
   position: relative;
 }
-:where(.booking-app) .purpose-input input {
-  padding-right: 65px;
+:where(.booking-app) .purpose-input select {
+  width: 100%;
+  height: 36px;
+  padding: 0 30px 0 10px;
+  color: var(--bk-ink);
+  background: var(--bk-surface);
+  border: 1px solid var(--bk-line);
+  border-radius: 4px;
+  font: inherit;
+  appearance: none;
+  cursor: pointer;
 }
-:where(.booking-app) .purpose-input input::-webkit-calendar-picker-indicator {
-  opacity: 0;
+:where(.booking-app) .purpose-input select.is-placeholder {
+  color: #8a918d;
+}
+:where(.booking-app) .purpose-input select option {
+  color: var(--bk-ink);
+}
+:where(.booking-app) .purpose-input select:hover:enabled {
+  border-color: #b7beba;
+}
+:where(.booking-app) .purpose-input select:focus-visible {
+  border-color: var(--bk-primary);
+  outline: 2px solid var(--bk-primary-soft);
+  outline-offset: 0;
+}
+:where(.booking-app) select[aria-invalid='true'] {
+  border-color: var(--bk-danger);
 }
 :where(.booking-app) .purpose-chevron {
   position: absolute;
-  top: 12px;
-  right: 20px;
-  width: 49px;
-  height: 30px;
+  top: 50%;
+  right: 12px;
+  width: 10px;
+  height: 6px;
+  margin-top: -3px;
+  fill: none;
+  stroke: var(--bk-muted);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
   pointer-events: none;
-  transform: scale(.65);
-  transform-origin: right center;
-}
-:where(.booking-app) .purpose-chevron img {
-  position: absolute;
-  top: 14px;
-}
-:where(.booking-app) .purpose-chevron img:first-child {
-  left: -6px;
-  transform: rotate(50.59deg) skewX(-1.77deg);
-}
-:where(.booking-app) .purpose-chevron img:last-child {
-  left: 18px;
-  transform: rotate(-50.59deg) skewX(1.77deg);
 }
 :where(.booking-app) .booking-dates {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px;
-}
-:where(.booking-app) .booking-dates label {
-  font-size: 17px;
-}
-:where(.booking-app) .apparatus-section h2 {
-  font-size: clamp(20px, 1.56vw, 30px);
-  font-weight: 400;
-  text-align: center;
-  margin: 0 0 19px;
-}
-:where(.booking-app) .apparatus-list {
-  border: 1px solid #777;
-  min-height: clamp(340px, 31.25vw, 600px);
-}
-:where(.booking-app) .apparatus-band {
-  display: flex;
-  justify-content: space-between;
   gap: 12px;
-  align-items: center;
-  background: var(--lime);
-  min-height: 54px;
-  padding: 10px 22px;
-  font-size: 13px;
-  border-bottom: 1px solid #777;
 }
-:where(.booking-app) .apparatus-row {
-  min-height: 66px;
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  padding: 10px 14px 10px 22px;
-  border-bottom: 1px solid #777;
-}
-:where(.booking-app) .item-name {
-  flex: 1;
-  min-width: 0;
-  font-size: clamp(16px, 1.56vw, 30px);
-  overflow-wrap: anywhere;
-}
-:where(.booking-app) .item-quantity {
-  font-size: 13px;
-  white-space: nowrap;
-}
-:where(.booking-app) .edit-button {
-  background: var(--red);
-  color: white;
-  border: 0;
-  border-radius: 24px;
-  padding: 6px 18px;
-  font-size: 13px;
-}
-:where(.booking-app) .add-item-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 66px;
-  border: 0;
-  border-bottom: 1px solid #777;
-  background: white;
-}
-:where(.booking-app) .add-item-button:hover:enabled {
-  background: #f7f8ed;
-}
-:where(.booking-app) .plus-icon {
-  position: relative;
-  width: 22px;
-  height: 22px;
-}
-:where(.booking-app) .plus-icon img {
-  position: absolute;
-  top: 11px;
-  left: 0;
-}
-:where(.booking-app) .plus-icon img:first-child {
-  transform: rotate(90deg);
-  left: 2px;
-}
-:where(.booking-app) .item-editor {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 16px 20px;
-  background: #f7f8f5;
-  border-bottom: 1px solid #777;
-  font-size: 14px;
-}
-:where(.booking-app) .item-editor input {
-  width: 90px;
-  padding: 8px;
-  border: 1px solid #777;
-}
-:where(.booking-app) .item-editor small {
-  color: #555;
+:where(.booking-app) .booking-dates .booking-field {
+  margin-bottom: 0;
 }
 :where(.booking-app) .field-error {
   display: block;
-  color: var(--red);
-  font-size: 13px;
-  line-height: 1.5;
-  margin-top: 6px;
+  margin-top: 5px;
+  color: var(--bk-danger);
+  font-size: 12px;
+}
+
+/* Items */
+:where(.booking-app) .item-count {
+  color: var(--bk-muted);
+  font-size: 12px;
+}
+:where(.booking-app) .add-item-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  margin-left: auto;
+  padding: 0 12px;
+  color: var(--bk-primary);
+  background: var(--bk-surface);
+  border: 1px solid var(--bk-primary);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+:where(.booking-app) .add-item-button span {
+  font-size: 15px;
+  line-height: 1;
+}
+:where(.booking-app) .add-item-button:hover:enabled {
+  background: var(--bk-primary-soft);
+}
+:where(.booking-app) .apparatus-band,
+:where(.booking-app) .apparatus-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 64px;
+  gap: 12px;
+  align-items: center;
+  padding: 0 16px;
+}
+:where(.booking-app) .apparatus-band {
+  height: 34px;
+  color: var(--bk-muted);
+  background: var(--bk-canvas);
+  border-bottom: 1px solid var(--bk-line-soft);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+:where(.booking-app) .apparatus-row {
+  min-height: 48px;
+  border-bottom: 1px solid var(--bk-line-soft);
+}
+:where(.booking-app) .item-name {
+  overflow-wrap: anywhere;
+}
+:where(.booking-app) .item-quantity {
+  color: var(--bk-muted);
+  white-space: nowrap;
+}
+:where(.booking-app) .edit-button {
+  justify-self: end;
+  height: 28px;
+  padding: 0 12px;
+  color: var(--bk-ink);
+  background: var(--bk-surface);
+  border: 1px solid var(--bk-line);
+  border-radius: 4px;
+  font-size: 12px;
+}
+:where(.booking-app) .edit-button:hover:enabled,
+:where(.booking-app) .edit-button[aria-expanded='true'] {
+  border-color: var(--bk-primary);
+  color: var(--bk-primary);
+}
+:where(.booking-app) .item-editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  padding: 12px 16px;
+  background: var(--bk-primary-soft);
+  border-bottom: 1px solid var(--bk-line-soft);
+  font-size: 12px;
+}
+:where(.booking-app) .item-editor label {
+  font-weight: 600;
+}
+:where(.booking-app) .item-editor input {
+  width: 90px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--bk-line);
+  border-radius: 4px;
+}
+:where(.booking-app) .item-editor small {
+  color: var(--bk-muted);
+  font-size: 12px;
+}
+:where(.booking-app) .item-editor .text-button {
+  margin-left: auto;
 }
 :where(.booking-app) .item-editor .field-error {
   flex-basis: 100%;
+  margin-top: 0;
 }
 :where(.booking-app) .text-button {
-  background: transparent;
+  padding: 6px 0;
+  color: var(--bk-primary);
+  background: none;
   border: 0;
-  color: var(--red);
+  font-size: 12px;
   text-decoration: underline;
-  padding: 8px 0;
+}
+:where(.booking-app) .text-button.danger {
+  color: var(--bk-danger);
 }
 :where(.booking-app) .empty-items {
-  color: #555;
-  padding: 24px;
-  font-size: 14px;
-  line-height: 1.6;
+  display: grid;
+  gap: 4px;
+  padding: 40px 16px;
+  color: var(--bk-muted);
+  text-align: center;
 }
-:where(.booking-app) .availability-note {
-  font-size: 12px;
-  color: #555;
-  line-height: 1.6;
-  margin: 10px 0;
+:where(.booking-app) .empty-items strong {
+  color: var(--bk-ink);
+  font-weight: 600;
 }
 :where(.booking-app) .booking-actions {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 12px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+}
+:where(.booking-app) .availability-note {
+  margin: 0;
+  color: var(--bk-muted);
+  font-size: 12px;
 }
 :where(.booking-app) .book-button {
-  min-width: 164px;
-  min-height: 38px;
-  padding: 8px 22px;
+  height: 36px;
+  padding: 0 20px;
+  white-space: nowrap;
+  color: #fff;
+  background: var(--bk-primary);
   border: 0;
-  border-radius: 10px;
-  background: var(--green);
-  color: white;
-  font-size: 18px;
+  border-radius: 4px;
+  font-weight: 600;
 }
 :where(.booking-app) .book-button:hover:enabled {
-  background: #256524;
+  background: var(--bk-primary-hover);
 }
+
+/* Feedback */
 :where(.booking-app) .booking-feedback {
-  margin-top: 25px;
-  padding: 20px 24px;
-  border: 1px solid var(--red);
-  background: #fff7f6;
-  line-height: 1.6;
+  margin-top: 16px;
+  padding: 14px 16px;
+  color: var(--bk-ink);
+  background: var(--bk-danger-soft);
+  border: 1px solid var(--bk-danger);
+  border-left-width: 3px;
+  border-radius: 4px;
   overflow-wrap: anywhere;
 }
 :where(.booking-app) .booking-feedback h2 {
-  margin: 0 0 8px;
-  font-size: 20px;
+  margin-bottom: 4px;
+  font-size: 15px;
 }
 :where(.booking-app) .booking-feedback p {
-  margin: 5px 0;
+  margin: 4px 0;
 }
 :where(.booking-app) .booking-feedback ul {
-  margin-bottom: 0;
-  padding-left: 20px;
+  margin: 6px 0 0;
+  padding-left: 18px;
 }
 :where(.booking-app) .booking-feedback.is-success {
-  border-color: var(--green);
-  background: #f4f9f1;
+  background: var(--bk-primary-soft);
+  border-color: var(--bk-primary);
 }
+
+/* Item picker: paginated student inventory */
 :where(.booking-app) .item-picker {
-  width: min(560px, calc(100% - 32px));
-  max-height: 85vh;
-  border: 1px solid #777;
-  padding: 24px;
+  width: min(720px, calc(100% - 32px));
+  max-height: 88vh;
+  padding: 0;
+  color: var(--bk-ink);
+  border: 1px solid var(--bk-line);
+  border-radius: 6px;
+}
+:where(.booking-app) .item-picker[open] {
+  display: flex;
+  flex-direction: column;
 }
 :where(.booking-app) .item-picker::backdrop {
-  background: #14201680;
+  background: rgb(20 32 26 / 45%);
 }
 :where(.booking-app) .picker-heading {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  align-items: start;
-  gap: 20px;
+  gap: 16px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--bk-line-soft);
 }
 :where(.booking-app) .picker-heading h2 {
-  font-size: 20px;
-  margin: 8px 0;
+  font-size: 15px;
+  font-weight: 650;
 }
-:where(.booking-app) .item-picker p {
-  font-size: 14px;
-  color: #555;
+:where(.booking-app) .picker-heading p {
+  margin: 2px 0 0;
+  color: var(--bk-muted);
+  font-size: 12px;
 }
-:where(.booking-app) .picker-list {
-  list-style: none;
+:where(.booking-app) .picker-note {
+  margin: 12px 16px 0;
+  color: var(--bk-muted);
+  font-size: 12px;
+}
+:where(.booking-app) .picker-search {
+  display: flex;
+  height: 32px;
+  align-items: center;
+  gap: 7px;
+  margin: 12px 16px 0;
+  padding: 0 10px;
+  background: var(--bk-surface);
+  border: 1px solid var(--bk-line);
+  border-radius: 4px;
+}
+:where(.booking-app) .picker-search:focus-within {
+  border-color: var(--bk-primary);
+  outline: 2px solid var(--bk-primary-soft);
+}
+:where(.booking-app) .picker-search svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  fill: none;
+  stroke: var(--bk-muted);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+:where(.booking-app) .picker-search input {
+  width: 100%;
+  min-width: 0;
   padding: 0;
+  color: var(--bk-ink);
+  background: none;
+  border: 0;
+  outline: 0;
+  font-size: 12px;
 }
-:where(.booking-app) .picker-list li {
+:where(.booking-app) .picker-search input::placeholder {
+  color: #8a918d;
+}
+:where(.booking-app) .picker-empty {
+  height: 80px !important;
+  color: var(--bk-muted);
+  text-align: center !important;
+  white-space: normal !important;
+}
+:where(.booking-app) .picker-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px 16px 0;
+}
+:where(.booking-app) .picker-table {
+  width: 100%;
+  border: 1px solid var(--bk-line);
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+:where(.booking-app) .picker-table th,
+:where(.booking-app) .picker-table td {
+  height: 38px;
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--bk-line-soft);
+  white-space: nowrap;
+}
+:where(.booking-app) .picker-table th {
+  height: 34px;
+  color: var(--bk-muted);
+  background: var(--bk-canvas);
+  border-bottom-color: var(--bk-line);
+  font-size: 11px;
+  font-weight: 600;
+}
+:where(.booking-app) .picker-table th:last-child,
+:where(.booking-app) .picker-table td:last-child {
+  width: 1%;
+  text-align: right;
+}
+:where(.booking-app) .picker-item-name {
+  font-weight: 600;
+  white-space: normal !important;
+}
+:where(.booking-app) .picker-table .out-of-stock {
+  color: var(--bk-muted);
+}
+:where(.booking-app) .picker-table button,
+:where(.booking-app) .paginator button {
+  height: 28px;
+  padding: 0 12px;
+  color: var(--bk-primary);
+  background: var(--bk-surface);
+  border: 1px solid var(--bk-primary);
+  border-radius: 4px;
+  font-size: 12px;
+}
+:where(.booking-app) .picker-table button:hover:enabled,
+:where(.booking-app) .paginator button:hover:enabled {
+  background: var(--bk-primary-soft);
+}
+:where(.booking-app) .picker-table button.is-added {
+  color: var(--bk-primary);
+  background: var(--bk-primary-soft);
+  border-color: transparent;
+  opacity: 1;
+}
+:where(.booking-app) .picker-footer {
   display: flex;
   align-items: center;
-  gap: 15px;
   justify-content: space-between;
-  border-top: 1px solid #ddd;
-  padding: 18px 0;
+  gap: 12px;
+  padding: 12px 16px 14px;
 }
-:where(.booking-app) .picker-list small {
-  display: block;
-  color: #555;
-  margin-top: 5px;
+:where(.booking-app) .paginator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--bk-muted);
+  font-size: 12px;
 }
-:where(.booking-app) .picker-list button {
-  border: 1px solid var(--green);
-  color: #1e532d;
-  background: white;
-  padding: 9px 15px;
-  border-radius: 5px;
+:where(.booking-app) .paginator button {
+  color: var(--bk-ink);
+  border-color: var(--bk-line);
 }
-@media (max-width: 1100px) {
-  :where(.booking-app) .booking-panel {
-    padding-inline: 5%;
-  }
-  :where(.booking-app) .booking-columns {
-    gap: 7%;
-  }
-  :where(.booking-app) .apparatus-row {
-    flex-wrap: wrap;
-    gap: 10px;
-    padding-inline: 14px;
-  }
-  :where(.booking-app) .item-name {
-    flex-basis: 60%;
-  }
-  :where(.booking-app) .booking-dates {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-}
-@media (max-width: 700px) {
-  :where(.booking-app) .booking-panel {
-    margin: 48px 14px 20px;
-    padding: 22px 20px 30px;
-    min-height: auto;
-  }
-  :where(.booking-app) .booking-columns {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  :where(.booking-app) .borrower-fields {
-    padding: 0;
-  }
-  :where(.booking-app) .booking-field {
-    margin-bottom: 22px;
-  }
-  :where(.booking-app) .booking-field input {
-    height: 44px;
-  }
-  :where(.booking-app) .booking-dates {
-    grid-template-columns: 1fr 1fr;
+
+@media (max-width: 760px) {
+  :where(.booking-app) .booking-topbar {
     gap: 12px;
+    padding: 0 16px;
   }
-  :where(.booking-app) .booking-dates label {
-    font-size: 14px;
+  :where(.booking-app) .booking-page {
+    padding: 16px;
   }
-  :where(.booking-app) .apparatus-band {
-    min-height: 42px;
-    padding-inline: 14px;
-    font-size: 12px;
+  :where(.booking-app) .booking-workspace {
+    grid-template-columns: 1fr;
   }
-  :where(.booking-app) .apparatus-list {
-    min-height: 300px;
+  :where(.booking-app) .apparatus-band,
+  :where(.booking-app) .apparatus-row {
+    grid-template-columns: minmax(0, 1fr) auto auto;
   }
-  :where(.booking-app) .purpose-chevron {
-    top: 8px;
+  :where(.booking-app) .booking-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
   :where(.booking-app) .book-button {
-    min-height: 44px;
+    height: 44px;
   }
-  :where(.booking-app) .booking-feedback {
-    padding: 16px;
+  :where(.booking-app) .picker-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  :where(.booking-app) .paginator {
+    justify-content: space-between;
+  }
+}
+@media (max-width: 420px) {
+  :where(.booking-app) .booking-dates {
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
 }
