@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { bookingPayload, localDate, refreshDraft, validateBooking } from './booking.js'
+import { bookingPayload, localDate, recheckErrors, refreshDraft, validateBooking } from './booking.js'
 import './BookingPage.css'
 
 const PAGE_SIZE = 8
@@ -10,18 +10,24 @@ const purposes = ['Laboratory experiment', 'Course requirement', 'Thesis', 'Rese
  * submitRequest(payload) resolves to { reference, status: 'Pending' } after save.
  * onChooseItems is the inventory-navigation handoff; inventory enables a local picker.
  * onDraftChange(items) receives the draft after every change, and [] once a request is saved.
+ * savedForm / onFormChange(form, submissionKey) keep the details and key across a sign-in; null once saved.
+ * onStockChanged() reloads inventory after the server reports changed stock; onSignIn() starts a new sign-in.
  */
-export default function BookingPage({ initialItems = [], inventory = [], inventoryNote = '', draftNote = '', borrower = {}, submitRequest, onChooseItems, onDraftChange, demo = false }) {
-  const [form, setForm] = useState({ ...blankForm, studentId: borrower.studentId ?? '' })
+export default function BookingPage({ initialItems = [], inventory = [], inventoryNote = '', draftNote = '', borrower = {}, savedForm = null, submitRequest, onChooseItems, onDraftChange, onFormChange, onStockChanged, onSignIn, demo = false }) {
+  const [form, setForm] = useState({ ...blankForm, ...savedForm?.form, studentId: borrower.studentId ?? '' })
   const [items, setItems] = useState(() => initialItems.map((item) => ({ ...item, quantity: String(item.quantity ?? 1) })))
   const [errors, setErrors] = useState({})
   const [editing, setEditing] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [failure, setFailure] = useState('')
+  const [failureCode, setFailureCode] = useState('')
+  const [stockCheck, setStockCheck] = useState(false)
   const [confirmation, setConfirmation] = useState(null)
   const [page, setPage] = useState(0)
   const [query, setQuery] = useState('')
   const inFlight = useRef(false)
+  // One key per draft: a retry after a lost response resolves to the request already saved.
+  const submissionKey = useRef(savedForm?.submissionKey ?? crypto.randomUUID())
   const picker = useRef(null)
   const feedback = useRef(null)
   const locked = submitting || Boolean(confirmation)
@@ -32,22 +38,44 @@ export default function BookingPage({ initialItems = [], inventory = [], invento
     setRefreshedFrom(inventory)
     const { items: refreshed, removed } = refreshDraft(items, inventory)
     setItems(refreshed)
-    if (removed.length) setFailure(`No longer available, removed from your request: ${removed.map((item) => item.name).join(', ')}.`)
+    const removedNote = removed.length ? `No longer available, removed from your request: ${removed.map((item) => item.name).join(', ')}. ` : ''
+    if (stockCheck) {
+      // After a changed-stock rejection, highlight exactly the items that no longer fit current stock.
+      setStockCheck(false)
+      const itemErrors = Object.fromEntries(Object.entries(validateBooking(form, refreshed)).filter(([key]) => key.startsWith('item-')))
+      setErrors(itemErrors)
+      setFailure(`${removedNote}${Object.keys(itemErrors).length ? 'Stock changed for the items below. Lower the quantities, then submit again.' : 'Stock was updated. Check your items, then submit again.'}`)
+    } else if (removedNote) setFailure(removedNote.trim())
   }
 
   useEffect(() => {
     onDraftChange?.(confirmation ? [] : items)
   }, [items, confirmation, onDraftChange])
 
+  useEffect(() => {
+    onFormChange?.(confirmation ? null : form, submissionKey.current)
+  }, [form, confirmation, onFormChange])
+
   function changeField(event) {
     const { name, value } = event.target
-    setForm((current) => ({ ...current, [name]: value }))
-    setErrors((current) => ({ ...current, [name]: undefined }))
+    const nextForm = { ...form, [name]: value }
+    setForm(nextForm)
+    setErrors((current) => recheckErrors(current, nextForm, items))
+  }
+
+  function changeItems(nextItems) {
+    setItems(nextItems)
+    setErrors((current) => recheckErrors(current, form, nextItems))
   }
 
   function addItem(item) {
-    setItems((current) => current.some((entry) => entry.id === item.id) ? current : [...current, { ...item, quantity: '1' }])
-    setErrors((current) => ({ ...current, items: undefined }))
+    if (!items.some((entry) => entry.id === item.id)) changeItems([...items, { ...item, quantity: '1' }])
+  }
+
+  // Each summary entry moves focus to the control that needs fixing.
+  function errorTarget(key) {
+    if (key === 'items') return 'add-item'
+    return key.startsWith('item-') ? `quantity-${key.slice(5)}` : key
   }
 
   async function chooseItems() {
@@ -76,6 +104,7 @@ export default function BookingPage({ initialItems = [], inventory = [], invento
     const nextErrors = validateBooking(form, items)
     setErrors(nextErrors)
     setFailure('')
+    setFailureCode('')
     if (Object.keys(nextErrors).length) {
       requestAnimationFrame(() => feedback.current?.focus())
       return
@@ -84,11 +113,19 @@ export default function BookingPage({ initialItems = [], inventory = [], invento
     setSubmitting(true)
     try {
       if (!submitRequest) throw new Error('Booking submission is not connected yet. Your entries are still here.')
-      const result = await submitRequest(bookingPayload(form, items))
-      if (!result?.reference || result.status !== 'Pending') throw new Error('The server did not confirm a saved Pending request. Check with the lab before retrying.')
+      const result = await submitRequest(bookingPayload(form, items, submissionKey.current))
+      if (!result?.reference || typeof result.status !== 'string' || !result.status) throw new Error('The server did not confirm a saved request. Check with the lab before retrying.')
       setConfirmation(result)
     } catch (error) {
       setFailure(error instanceof Error ? error.message : 'Unable to submit. Your entries are still here; please try again.')
+      setFailureCode(error?.code ?? '')
+      // The server's text for this case is written for developers; tell the student what happened instead.
+      if (error?.code === 'BOOKING_SUBMISSION_CONFLICT') setFailure('This request was already saved before your latest changes. Your changes were not included.')
+      if (['BOOKING_STOCK_EXCEEDED', 'BOOKING_ITEM_UNAVAILABLE'].includes(error?.code) && onStockChanged) {
+        setFailure('Stock changed since you added these items. Updating current stock; if nothing changes, reload the page.')
+        setStockCheck(true)
+        onStockChanged()
+      }
     } finally {
       inFlight.current = false
       setSubmitting(false)
@@ -147,7 +184,7 @@ export default function BookingPage({ initialItems = [], inventory = [], invento
             <div className="card-heading">
               <h2 id="apparatus-heading">Requested items</h2>
               <span className="item-count">{itemCount}</span>
-              <button type="button" className="add-item-button" disabled={locked} onClick={chooseItems}><span aria-hidden="true">+</span> Add item</button>
+              <button type="button" id="add-item" className="add-item-button" disabled={locked} onClick={chooseItems}><span aria-hidden="true">+</span> Add item</button>
             </div>
             <div className="apparatus-list">
               <div className="apparatus-band" aria-hidden="true"><span>Item</span><span>Quantity</span><span /></div>
@@ -155,9 +192,9 @@ export default function BookingPage({ initialItems = [], inventory = [], invento
                 <div className="apparatus-row"><span className="item-name">{item.name}</span><span className="item-quantity">{item.quantity || '—'} {item.unit}</span><button className="edit-button" type="button" disabled={locked} aria-expanded={editing === item.id} aria-controls={`editor-${item.id}`} onClick={() => setEditing(editing === item.id ? null : item.id)}>{editing === item.id ? 'Done' : 'Edit'}<span className="booking-sr-only"> {item.name}</span></button></div>
                 {(editing === item.id || errors[`item-${item.id}`]) && <div className="item-editor" id={`editor-${item.id}`}>
                   <label htmlFor={`quantity-${item.id}`}>Quantity ({item.unit})</label>
-                  <input id={`quantity-${item.id}`} type="number" min="0" step={item.unit === 'pcs' ? '1' : '0.01'} value={item.quantity} disabled={locked} aria-invalid={Boolean(errors[`item-${item.id}`])} aria-describedby={`stock-${item.id}${errors[`item-${item.id}`] ? ` error-${item.id}` : ''}`} onChange={(event) => { const value = event.target.value; setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, quantity: value } : entry)); setErrors((current) => ({ ...current, [`item-${item.id}`]: undefined })) }} />
+                  <input id={`quantity-${item.id}`} type="number" min="0" step={item.unit === 'pcs' ? '1' : '0.01'} value={item.quantity} disabled={locked} aria-invalid={Boolean(errors[`item-${item.id}`])} aria-describedby={`stock-${item.id}${errors[`item-${item.id}`] ? ` error-${item.id}` : ''}`} onChange={(event) => changeItems(items.map((entry) => entry.id === item.id ? { ...entry, quantity: event.target.value } : entry))} />
                   <small id={`stock-${item.id}`}>{item.available} {item.unit} in stock</small>
-                  <button type="button" className="text-button danger" disabled={locked} onClick={() => { setItems((current) => current.filter((entry) => entry.id !== item.id)); setErrors((current) => ({ ...current, [`item-${item.id}`]: undefined })) }}>Remove<span className="booking-sr-only"> {item.name}</span></button>
+                  <button type="button" className="text-button danger" disabled={locked} onClick={() => changeItems(items.filter((entry) => entry.id !== item.id))}>Remove<span className="booking-sr-only"> {item.name}</span></button>
                   {errors[`item-${item.id}`] && <span className="field-error" id={`error-${item.id}`}>{errors[`item-${item.id}`]}</span>}
                 </div>}
               </div>)}
@@ -165,12 +202,12 @@ export default function BookingPage({ initialItems = [], inventory = [], invento
             </div>
             <div className="booking-actions">
               <p className="availability-note">{submitRequest ? 'Stock is checked again when you submit.' : 'Select items and edit quantities. Request submission is not available yet.'}</p>
-              <button type="submit" className="book-button" disabled={locked || !submitRequest}>{submitting ? 'Submitting…' : confirmation ? 'Submitted' : 'Submit request'}</button>
+              <button type="submit" className="book-button" disabled={locked}>{submitting ? 'Submitting…' : confirmation ? 'Submitted' : 'Submit request'}</button>
             </div>
           </section>
         </div>
         {(Object.keys(errors).some((key) => errors[key]) || failure || confirmation) && <div className={`booking-feedback ${confirmation ? 'is-success' : ''}`} ref={feedback} tabIndex={-1} role={confirmation ? 'status' : 'alert'}>
-          {confirmation ? <><h2>{demo ? 'Demo request complete' : 'Request saved'}</h2><p>Reference: <strong>{confirmation.reference}</strong> · Status: <strong>{confirmation.status}</strong></p><p>{demo ? 'This is a preview confirmation. No request was sent to the lab.' : 'Your request is awaiting staff review.'}</p><button type="button" className="text-button" onClick={() => { setConfirmation(null); setItems([]); setForm((current) => ({ ...current, subject: '', purpose: '', purposeOther: '', borrowDate: '', returnDate: '' })); setEditing(null) }}>Create another request</button></> : <><strong>{failure || 'Please check the following:'}</strong>{!failure && <ul>{Object.entries(errors).filter(([, value]) => value).map(([key, value]) => <li key={key}>{key.startsWith('item-') ? `${items.find((item) => `item-${item.id}` === key)?.name}: ` : ''}{value}</li>)}</ul>}</>}
+          {confirmation ? <><h2>{demo ? 'Demo request complete' : 'Request saved'}</h2><p>Reference: <strong>{confirmation.reference}</strong> · Status: <strong>{confirmation.status}</strong></p><p>{demo ? 'This is a preview confirmation. No request was sent to the lab.' : (confirmation.status === 'Pending' ? 'Your request is awaiting staff review.' : 'Lab staff have already reviewed this request.')}</p><button type="button" className="text-button" onClick={() => { submissionKey.current = crypto.randomUUID(); setConfirmation(null); setItems([]); setForm((current) => ({ ...current, subject: '', purpose: '', purposeOther: '', borrowDate: '', returnDate: '' })); setEditing(null) }}>Create another request</button></> : <><strong>{failure || 'Please check the following:'}</strong>{failureCode === 'SESSION_EXPIRED' && onSignIn && <p><button type="button" className="text-button" onClick={onSignIn}>Sign in again</button></p>}{failureCode === 'BOOKING_SUBMISSION_CONFLICT' && <p><button type="button" className="text-button" onClick={(event) => { submissionKey.current = crypto.randomUUID(); onFormChange?.(form, submissionKey.current); event.currentTarget.form.requestSubmit() }}>Save my changes as a new request</button></p>}{Object.values(errors).some(Boolean) && <ul>{Object.entries(errors).filter(([, value]) => value).map(([key, value]) => <li key={key}><a href={`#${errorTarget(key)}`} onClick={(event) => { event.preventDefault(); document.getElementById(errorTarget(key))?.focus() }}>{key.startsWith('item-') ? `${items.find((item) => `item-${item.id}` === key)?.name}: ` : ''}{value}</a></li>)}</ul>}</>}
         </div>}
       </form>
     </main>

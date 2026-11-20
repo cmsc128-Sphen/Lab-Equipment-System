@@ -431,6 +431,11 @@
   margin: 6px 0 0;
   padding-left: 18px;
 }
+:where(.booking-app) .booking-feedback li a {
+  color: var(--bk-danger);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 :where(.booking-app) .booking-feedback.is-success {
   background: var(--bk-primary-soft);
   border-color: var(--bk-primary);

@@ -9,3 +9,42 @@ export async function submitDemoRequest() {
   await new Promise((resolve) => setTimeout(resolve, 500))
   return { reference: `DEMO-${crypto.randomUUID().slice(0, 8).toUpperCase()}`, status: 'Pending' }
 }
+
+function demoFailure(message, code) {
+  const error = new Error(message)
+  error.code = code
+  return error
+}
+
+/** Preview-only failure modes for checking retry behaviour (?simulate=network|session|stock|lost).
+ * Each fails the first attempt, then saves; saved requests are remembered per submission key,
+ * and a retry with changed details is rejected like the server does.
+ */
+export function createDemoSubmitter(mode) {
+  const saved = new Map()
+  let attempts = 0
+  return async (payload) => {
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    attempts += 1
+    console.info(`[preview] attempt ${attempts} key=${payload.submissionKey}`)
+    const details = JSON.stringify({ ...payload, submissionKey: undefined })
+    if (saved.has(payload.submissionKey)) {
+      const original = saved.get(payload.submissionKey)
+      if (original.details !== details) {
+        console.info(`[preview] rejected changed retry of ${original.result.reference}`)
+        throw demoFailure('This submission key was already used for a different request.', 'BOOKING_SUBMISSION_CONFLICT')
+      }
+      console.info(`[preview] replayed ${original.result.reference}`)
+      return original.result
+    }
+    if (attempts === 1 && mode === 'network') throw demoFailure('Could not reach the server. Your entries are still here. Submit again; your request will not be saved twice.', 'NETWORK')
+    if (attempts === 1 && mode === 'session') throw demoFailure('Your session has expired. Sign in again, then submit. Your entries are kept.', 'SESSION_EXPIRED')
+    if (attempts === 1 && mode === 'stock') throw demoFailure('An item no longer has enough stock. Reload the page and lower the quantity.', 'BOOKING_STOCK_EXCEEDED')
+    const result = { reference: `DEMO-${crypto.randomUUID().slice(0, 8).toUpperCase()}`, status: 'Pending' }
+    saved.set(payload.submissionKey, { result, details })
+    console.info(`[preview] saved ${result.reference}`)
+    // The save "commits" but the response is lost, as after a dropped connection.
+    if (attempts === 1 && mode === 'lost') throw demoFailure("We couldn't confirm your request was saved. Submit again; it will not be saved twice.", 'UNCERTAIN')
+    return result
+  }
+}

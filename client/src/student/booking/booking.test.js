@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { bookingPayload, refreshDraft, validateBooking } from './booking.js'
+import { bookingPayload, recheckErrors, refreshDraft, validateBooking } from './booking.js'
 import { createRequestSubmitter } from '../../services/bookingRequests.js'
 
 const form = { studentId: '2026-00001', subject: 'Chemistry 16', purpose: 'Research', borrowDate: '2026-11-01', returnDate: '2026-11-02' }
@@ -43,6 +43,47 @@ test('rejects empty selection, duplicate items and invalid quantities', () => {
   assert.ok(validate(form, [{ ...chemical, quantity: '21' }])['item-salt'])
 })
 
+test('quantity feedback names the specific problem', () => {
+  const message = (quantity, item = equipment) => validate(form, [{ ...item, quantity }])[`item-${item.id}`]
+  assert.equal(message(''), 'Enter a quantity.')
+  assert.equal(message('  '), 'Enter a quantity.')
+  assert.equal(message('Infinity'), 'Enter a valid number.')
+  assert.equal(message('abc'), 'Enter a valid number.')
+  assert.equal(message('0'), 'Enter a quantity greater than zero.')
+  assert.equal(message('-2'), 'Enter a quantity greater than zero.')
+  assert.equal(message('1.5'), 'Quantities in pcs must be whole numbers.')
+  assert.equal(message('0.125', chemical), 'Use at most 2 decimal places.')
+  assert.equal(message('4'), 'Only 3 pcs currently available.')
+})
+
+test('missing and invalid fields each get their own message', () => {
+  const errors = validate({ studentId: '', subject: ' ', purpose: '', borrowDate: '2026-13-01', returnDate: '' }, [])
+  assert.deepEqual(errors, {
+    subject: 'Enter your subject.',
+    purpose: 'Choose the purpose of your request.',
+    borrowDate: 'Choose a valid borrowing date.',
+    returnDate: 'Choose a valid return date.',
+    items: 'Select at least one item.',
+  })
+})
+
+test('correcting a field clears only the errors that no longer apply', () => {
+  const today = '2026-10-30'
+  const bad = { ...form, subject: '', purpose: 'Other', purposeOther: '', borrowDate: '2026-11-05', returnDate: '2026-11-02' }
+  const errors = validateBooking(bad, [equipment], today)
+  assert.deepEqual(Object.keys(errors).sort(), ['purposeOther', 'returnDate', 'subject'])
+  // Switching away from Other drops its hidden error; the others stay.
+  assert.deepEqual(Object.keys(recheckErrors(errors, { ...bad, purpose: 'Thesis' }, [equipment], today)).sort(), ['returnDate', 'subject'])
+  // Moving the borrow date earlier fixes the return-date error without touching the return field.
+  assert.deepEqual(Object.keys(recheckErrors(errors, { ...bad, borrowDate: '2026-11-01' }, [equipment], today)).sort(), ['purposeOther', 'subject'])
+  // Errors that were not shown are not added while typing.
+  assert.deepEqual(recheckErrors({}, bad, [], today), {})
+  // Item errors update with the item and clear when it is removed.
+  const itemErrors = validateBooking(form, [{ ...equipment, quantity: '0' }], today)
+  assert.equal(recheckErrors(itemErrors, form, [{ ...equipment, quantity: '9' }], today)['item-beaker'], 'Only 3 pcs currently available.')
+  assert.deepEqual(recheckErrors(itemErrors, form, [chemical], today), {})
+})
+
 test('builds a trimmed payload with integer-hundredth quantities and no borrower or unit fields', () => {
   const payload = bookingPayload({ ...form, subject: ' Chemistry 16 ' }, [equipment, chemical])
   assert.equal(payload.subject, 'Chemistry 16')
@@ -51,6 +92,7 @@ test('builds a trimmed payload with integer-hundredth quantities and no borrower
   assert.equal(bookingPayload(form, [{ ...chemical, quantity: '25.5' }]).items[0].quantity, 2550)
   assert.equal(bookingPayload(form, [{ ...chemical, quantity: '0.29' }]).items[0].quantity, 29)
   assert.equal('borrower' in payload, false)
+  assert.equal(bookingPayload(form, [equipment], 'key-1').submissionKey, 'key-1')
 })
 
 test('refreshing a draft keeps quantities, updates stock and drops missing items', () => {
@@ -79,4 +121,42 @@ test('API adapter rejects missing/expired sessions and surfaces server validatio
     const submit = createRequestSubmitter({ endpoint: '/requests', getAccessToken: async () => 'token', fetchImpl: async () => new Response(JSON.stringify({ message: 'Not enough stock' }), { status }) })
     await assert.rejects(submit({}), new RegExp(message))
   }
+  const backend = createRequestSubmitter({ endpoint: '/api/bookings', getAccessToken: async () => 'token', fetchImpl: async () => new Response(JSON.stringify({ error: { code: 'BOOKING_STOCK_EXCEEDED', message: 'An item no longer has enough stock.' } }), { status: 409 }) })
+  await assert.rejects(backend({}), /no longer has enough stock/)
+})
+
+test('failures carry a code so the page can offer retry, sign-in or a stock recheck', async () => {
+  const submitter = (fetchImpl, getAccessToken = async () => 'token') => createRequestSubmitter({ endpoint: '/api/bookings', getAccessToken, fetchImpl })
+  const code = async (submit) => { try { await submit({}) } catch (error) { return error.code } }
+
+  // Network failure, including a timeout, keeps the retry message.
+  assert.equal(await code(submitter(async () => { throw new TypeError('Failed to fetch') })), 'NETWORK')
+  await assert.rejects(submitter(async () => { throw new TypeError('Failed to fetch') })({}), /will not be saved twice/)
+  // Expired session: missing token, failing token refresh, or a 401.
+  assert.equal(await code(submitter(() => assert.fail(), async () => null)), 'SESSION_EXPIRED')
+  assert.equal(await code(submitter(() => assert.fail(), async () => { throw new Error('refresh failed') })), 'SESSION_EXPIRED')
+  assert.equal(await code(submitter(async () => new Response('{}', { status: 401 }))), 'SESSION_EXPIRED')
+  // Changed stock keeps the server's code.
+  assert.equal(await code(submitter(async () => new Response(JSON.stringify({ error: { code: 'BOOKING_STOCK_EXCEEDED', message: 'x' } }), { status: 409 }))), 'BOOKING_STOCK_EXCEEDED')
+  // A success whose body is lost is uncertain, not a failure the student should abandon.
+  assert.equal(await code(submitter(async () => new Response('not json', { status: 201 }))), 'UNCERTAIN')
+})
+
+test('every attempt carries a timeout signal and the same key is resent on retry', async () => {
+  const sent = []
+  const submit = createRequestSubmitter({ endpoint: '/api/bookings', getAccessToken: async () => 'token', fetchImpl: async (_url, options) => {
+    sent.push(options)
+    if (sent.length === 1) throw new TypeError('Failed to fetch')
+    return new Response(JSON.stringify({ reference: 'REQ-1', status: 'Pending' }), { status: 200 })
+  } })
+  const payload = bookingPayload(form, [equipment], 'draft-key')
+  await assert.rejects(submit(payload))
+  assert.equal((await submit(payload)).reference, 'REQ-1')
+  assert.ok(sent.every((options) => options.signal instanceof AbortSignal))
+  assert.deepEqual(sent.map((options) => JSON.parse(options.body).submissionKey), ['draft-key', 'draft-key'])
+})
+
+test('a reused key with changed details surfaces the server conflict code', async () => {
+  const submit = createRequestSubmitter({ endpoint: '/api/bookings', getAccessToken: async () => 'token', fetchImpl: async () => new Response(JSON.stringify({ error: { code: 'BOOKING_SUBMISSION_CONFLICT', message: 'This submission key was already used for a different request.' } }), { status: 409 }) })
+  await assert.rejects(submit({}), (error) => error.code === 'BOOKING_SUBMISSION_CONFLICT')
 })
