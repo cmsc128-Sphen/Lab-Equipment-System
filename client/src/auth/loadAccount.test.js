@@ -30,6 +30,16 @@ test('account checks distinguish network failures and timeouts from rejected acc
     }, { status: 403 })), /no active laboratory profile/)
 })
 
+test('an expired or invalid session is identified so the provider can clear it', async () => {
+    await assert.rejects(
+        loadAccount(session, undefined, async () => Response.json({
+            error: { code: 'UNAUTHENTICATED', message: 'Your session has expired. Sign in again.' },
+        }, { status: 401 })),
+        (error) => error.code === 'UNAUTHENTICATED'
+            && error.message === 'Your session has expired. Sign in again.',
+    )
+})
+
 test('only an active profile belonging to the signed-in user can complete the account check', async () => {
     const profile = { id: 'test-user', role: 'student', is_active: true }
 

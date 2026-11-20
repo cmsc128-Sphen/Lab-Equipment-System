@@ -27,7 +27,13 @@ export async function loadAccount(session, signal, fetchAccount = fetch) {
     if (!response.ok) {
         const message = result?.error?.message
 
-        throw new Error(typeof message === 'string' ? message : 'Unable to load your account. Please try again.')
+        const error = new Error(typeof message === 'string' ? message : 'Unable to load your account. Please try again.')
+
+        if (response.status === 401) {
+            error.code = 'UNAUTHENTICATED'
+        }
+
+        throw error
     }
 
     const profile = result?.profile
