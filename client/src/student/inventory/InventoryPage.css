@@ -21,48 +21,6 @@
   font-size: 12px;
 }
 
-:where(.student-inventory-page) .topbar {
-  display: flex;
-  height: 58px;
-  align-items: center;
-  gap: 30px;
-  padding: 0 20px;
-  background: #4a6252;
-  color: #fff;
-}
-
-:where(.student-inventory-page) .brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  color: inherit;
-  font-size: 13px;
-  text-decoration: none;
-}
-
-:where(.student-inventory-page) .brand-mark,
-:where(.student-inventory-page) .profile-avatar {
-  display: grid;
-  width: 30px;
-  height: 30px;
-  place-items: center;
-  border: 1px solid rgb(255 255 255 / 55%);
-  border-radius: 50%;
-}
-
-:where(.student-inventory-page) .top-nav-link {
-  color: #fff;
-  font-size: 12px;
-}
-
-:where(.student-inventory-page) .profile {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-  font-size: 12px;
-}
-
 :where(.student-inventory-page) .workspace {
   display: flex;
   min-height: calc(100vh - 58px);
@@ -550,15 +508,6 @@
 }
 
 @media (max-width: 700px) {
-  :where(.student-inventory-page) .topbar {
-    gap: 12px;
-    padding: 0 12px;
-  }
-
-  :where(.student-inventory-page) .brand {
-    font-size: 11px;
-  }
-
   :where(.student-inventory-page) .sidebar {
     width: 150px;
     flex-basis: 150px;

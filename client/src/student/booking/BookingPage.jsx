@@ -149,8 +149,8 @@ export default function BookingPage({ initialItems = [], inventory = [], invento
               {!items.length && <div className="empty-items"><strong>No items yet</strong><span>Use “Add item” to choose equipment or chemicals.</span></div>}
             </div>
             <div className="booking-actions">
-              <p className="availability-note">Stock is checked again when you submit.</p>
-              <button type="submit" className="book-button" disabled={locked}>{submitting ? 'Submitting…' : confirmation ? 'Submitted' : 'Submit request'}</button>
+              <p className="availability-note">{submitRequest ? 'Stock is checked again when you submit.' : 'Select items and edit quantities. Request submission is not available yet.'}</p>
+              <button type="submit" className="book-button" disabled={locked || !submitRequest}>{submitting ? 'Submitting…' : confirmation ? 'Submitted' : 'Submit request'}</button>
             </div>
           </section>
         </div>
