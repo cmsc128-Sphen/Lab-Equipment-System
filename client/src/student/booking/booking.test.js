@@ -124,3 +124,34 @@ test('API adapter rejects missing/expired sessions and surfaces server validatio
   const backend = createRequestSubmitter({ endpoint: '/api/bookings', getAccessToken: async () => 'token', fetchImpl: async () => new Response(JSON.stringify({ error: { code: 'BOOKING_STOCK_EXCEEDED', message: 'An item no longer has enough stock.' } }), { status: 409 }) })
   await assert.rejects(backend({}), /no longer has enough stock/)
 })
+
+test('failures carry a code so the page can offer retry, sign-in or a stock recheck', async () => {
+  const submitter = (fetchImpl, getAccessToken = async () => 'token') => createRequestSubmitter({ endpoint: '/api/bookings', getAccessToken, fetchImpl })
+  const code = async (submit) => { try { await submit({}) } catch (error) { return error.code } }
+
+  // Network failure, including a timeout, keeps the retry message.
+  assert.equal(await code(submitter(async () => { throw new TypeError('Failed to fetch') })), 'NETWORK')
+  await assert.rejects(submitter(async () => { throw new TypeError('Failed to fetch') })({}), /will not be saved twice/)
+  // Expired session: missing token, failing token refresh, or a 401.
+  assert.equal(await code(submitter(() => assert.fail(), async () => null)), 'SESSION_EXPIRED')
+  assert.equal(await code(submitter(() => assert.fail(), async () => { throw new Error('refresh failed') })), 'SESSION_EXPIRED')
+  assert.equal(await code(submitter(async () => new Response('{}', { status: 401 }))), 'SESSION_EXPIRED')
+  // Changed stock keeps the server's code.
+  assert.equal(await code(submitter(async () => new Response(JSON.stringify({ error: { code: 'BOOKING_STOCK_EXCEEDED', message: 'x' } }), { status: 409 }))), 'BOOKING_STOCK_EXCEEDED')
+  // A success whose body is lost is uncertain, not a failure the student should abandon.
+  assert.equal(await code(submitter(async () => new Response('not json', { status: 201 }))), 'UNCERTAIN')
+})
+
+test('every attempt carries a timeout signal and the same key is resent on retry', async () => {
+  const sent = []
+  const submit = createRequestSubmitter({ endpoint: '/api/bookings', getAccessToken: async () => 'token', fetchImpl: async (_url, options) => {
+    sent.push(options)
+    if (sent.length === 1) throw new TypeError('Failed to fetch')
+    return new Response(JSON.stringify({ reference: 'REQ-1', status: 'Pending' }), { status: 200 })
+  } })
+  const payload = bookingPayload(form, [equipment], 'draft-key')
+  await assert.rejects(submit(payload))
+  assert.equal((await submit(payload)).reference, 'REQ-1')
+  assert.ok(sent.every((options) => options.signal instanceof AbortSignal))
+  assert.deepEqual(sent.map((options) => JSON.parse(options.body).submissionKey), ['draft-key', 'draft-key'])
+})
