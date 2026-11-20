@@ -38,6 +38,11 @@ this feature. It does not import the starter app's global styles or replace its
 homepage. The shared header will be supplied by the application at integration.
 Demo submission generates a DEMO reference in memory and writes no database data.
 
+Add `?simulate=network`, `session`, `stock` or `lost` to the preview URL to check
+failed and repeated submissions. Each fails the first attempt, then saves; `lost`
+saves first and loses the response, so the retry must return the same reference.
+Attempts and saved references are logged to the browser console.
+
 ## Integrate the page
 
 Marc imports the default component from `./student/booking/index.js` in the
@@ -70,6 +75,12 @@ Props:
   request is saved. The student route uses it to keep the inventory page's
   booking cart (`../inventoryCart.js`) in step with this page.
 - `draftNote`: message shown when the saved cart cannot be read or written.
+- `savedForm` / `onFormChange(form, submissionKey)`: the student route keeps the
+  details and submission key in this tab's session storage (same account only),
+  so a sign-in after an expired session restores them; cleared once saved.
+- `onStockChanged()`: called when the server reports changed stock; the route
+  reloads inventory and the page highlights the items that no longer fit.
+- `onSignIn()`: shown as "Sign in again" after an expired session.
 - `submitRequest(payload)`: resolves after persistence to
   `{ reference: string, status: 'Pending' }`; rejects with an Error on failure.
 - `onChooseItems(currentItems)`: optional callback for Ethan's selection UI.
