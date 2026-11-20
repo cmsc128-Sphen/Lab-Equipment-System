@@ -13,11 +13,24 @@
 
 ## Current status
 
-The student inventory page and booking item picker load the saved Supabase catalogue through the authenticated backend. Staff booking review loads saved requests, item quantities and available stock. Approval, disapproval and pickup-readiness decisions are persisted. Students submit bookings as saved Pending requests once [database/student-bookings.sql](database/student-bookings.sql) is applied. Email delivery is not connected yet.
+The current build connects account access, inventory selection, student booking submission and staff review to Supabase. The baseline database, registration trigger, booking submission function and staff review function are present in the connected project.
 
-The backend exposes HTTP health endpoints, a Supabase API connection check, the account profile endpoint, authenticated `GET /api/items`, and staff booking review endpoints. Unused routes return 404.
+| Area | Implemented behavior |
+| --- | --- |
+| Registration and login | Users register themselves with an exact `@up.edu.ph` address. Registration creates a student profile automatically; email verification is required before app access. Login, session restoration and logout are connected. |
+| Roles and access | Students access inventory and booking pages. Verified, active `lab_aid` and `admin` accounts access staff review. Backend token checks, stored profile roles and database RLS enforce access. Public registration cannot grant staff or admin roles. |
+| Inventory and item selection | The student inventory page and booking item picker load the saved catalogue through the authenticated API. Search, category and availability filters, pagination and a browser-stored booking cart are available. |
+| Student booking | Students submit a request and its item lines in one database transaction. The server derives ownership from the account and rechecks details, dates, quantities and stock. An unchanged retry uses the same submission key without creating a duplicate. Pending requests do not reserve stock. |
+| Staff booking review | Staff load saved requests, approve allocations, disapprove with a reason and mark approved requests ready for pickup. Approval reserves stock and records ledger entries atomically. Stale decisions and insufficient stock are rejected. |
+| Student request records | Authenticated list and detail API endpoints are available for the student's own requests. A student request-history page is not implemented yet. |
 
-The six-table foundation is created in the connected Supabase project and contains labelled mock data for development. No seeder file is used. Catalogue reads use the account agent's token helper and backend authentication middleware.
+The six-table database contains labelled mock records for development. These are saved database fixtures, not a frontend demo fallback; the mock Auth identities are not usable login accounts. Inventory and booking screens use the connected API. No seeder file is used.
+
+Pickup/checkout recording, return inspection, stock adjustment, student cancellation, inventory management and account-management screens are not implemented yet. Marking a request ready does not record a physical pickup. Booking decision and reminder emails are not connected; Supabase Auth confirmation emails are a separate flow. Image uploads remain deferred.
+
+Direct application-table writes remain disabled for ordinary accounts, including staff and admins. Registration uses its Auth trigger, while booking submission and review use guarded database functions. The backend also exposes health, Supabase reachability and account-check endpoints; unused routes return 404.
+
+Local setup requires both `client/.env` and `server/.env`, with the same Supabase project URL and publishable key, and both development servers running. Email confirmation requires the frontend's return URL to be allowed in Supabase Auth settings. Automated API, client and database checks are included; their results do not establish delivery to a real UP mailbox or a completed pickup-and-return workflow.
 
 ## Tech Stack
 
@@ -41,7 +54,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173` and sign in with a verified, active account. Run the backend too: Vite proxies `/api` requests to `http://localhost:3000`. The reference-only mock identities in the database have sign-in disabled; account creation is handled by the separate login/register work.
+Open `http://localhost:5173` and register at `/register` or sign in at `/login` with a verified, active account. Run the backend too: Vite proxies `/api` requests to `http://localhost:3000`. The reference-only mock identities in the database have sign-in disabled.
 
 ## Run the backend
 
@@ -96,7 +109,7 @@ Sign in with an active, verified student account and open `/student/booking`. Th
 - Pending requests do not reserve stock. Staff approval rechecks and reserves it.
 - Repeating a submission key returns the request already saved with that key (HTTP 200) instead of saving a second one. A new save returns 201 with `{ id, reference, status: 'Pending', createdAt }`.
 
-[database/student-bookings.sql](database/student-bookings.sql) is additive. Apply it after the baseline and `admin-bookings.sql`, in the Supabase SQL editor. [database/tests/student-bookings.sql](database/tests/student-bookings.sql) checks permissions, each rejection, no partial saves, the saved header and lines, unchanged stock and key replay. It rolls back all changes and expects the `MOCK-STUDENT-001` and `MOCK-ADMIN-001` fixtures plus at least one active item in stock.
+[database/student-bookings.sql](database/student-bookings.sql) is additive and is already applied to the connected project. When initializing another project, apply it after the baseline and `admin-bookings.sql`, in the Supabase SQL editor. [database/tests/student-bookings.sql](database/tests/student-bookings.sql) checks permissions, each rejection, no partial saves, the saved header and lines, unchanged stock and key replay. It rolls back all changes and expects the `MOCK-STUDENT-001` and `MOCK-ADMIN-001` fixtures plus at least one active item in stock.
 
 ## Database foundation
 
