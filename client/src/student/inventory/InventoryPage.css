@@ -1,11 +1,24 @@
 /* Same magnification as the admin review page (admin.css). */
 .student-inventory-page {
+  --inv-primary: #2f6b47;
+  --inv-primary-hover: #275a3c;
+  --inv-primary-soft: #edf3ef;
+  --inv-primary-line: #c9dccf;
+  --inv-canvas: #f5f6f5;
+  --inv-surface: #fff;
+  --inv-line: #d5dad7;
+  --inv-line-soft: #e7ebe8;
+  --inv-ink: #2b312e;
+  --inv-muted: #5f6763;
   zoom: 1.5;
 }
 
 :where(.student-inventory-page) .app-shell {
   min-height: 100vh;
-  background: #fff;
+  color: var(--inv-ink);
+  background: var(--inv-canvas);
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-size: 12px;
 }
 
 :where(.student-inventory-page) .topbar {
@@ -59,28 +72,47 @@
   width: 220px;
   flex: 0 0 220px;
   padding: 14px 12px;
-  border-right: 1px solid #bbb;
-  background: #fff;
+  border-right: 1px solid var(--inv-line);
+  background: var(--inv-surface);
 }
 
 :where(.student-inventory-page) .sidebar-heading {
   margin: 0 0 10px;
-  color: #111;
+  color: var(--inv-muted);
   font-size: 12px;
   font-weight: 700;
 }
 
 :where(.student-inventory-page) .sidebar-link {
   display: flex;
-  min-height: 28px;
+  width: 100%;
+  min-height: 34px;
   align-items: center;
   gap: 7px;
-  color: #222;
-  font-size: 12px;
+  padding: 2px 6px;
+  color: var(--inv-ink);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 9px;
+  text-align: left;
+  cursor: pointer;
 }
 
 :where(.student-inventory-page) .sidebar-link.selected {
+  color: var(--inv-primary);
+  background: var(--inv-primary-soft);
+  border-color: var(--inv-primary-line);
   font-weight: 600;
+}
+
+:where(.student-inventory-page) .sidebar-link:hover {
+  background: var(--inv-canvas);
+}
+
+:where(.student-inventory-page) .sidebar-link:focus-visible {
+  outline: 2px solid var(--inv-primary);
+  outline-offset: 2px;
 }
 
 :where(.student-inventory-page) .sidebar-count {
@@ -93,41 +125,63 @@
 
 :where(.student-inventory-page) .category-list {
   display: grid;
-  gap: 5px;
+  gap: 7px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 :where(.student-inventory-page) .category-list li {
+  min-width: 0;
+}
+
+:where(.student-inventory-page) .category-filter-button {
   display: flex;
+  width: 100%;
+  min-height: 24px;
   align-items: center;
   gap: 7px;
-  color: #222;
-  font-size: 11px;
+  padding: 2px 6px;
+  color: var(--inv-ink);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 9px;
+  text-align: left;
+  cursor: pointer;
+}
+
+:where(.student-inventory-page) .category-filter-button:hover {
+  background: var(--inv-canvas);
+}
+
+:where(.student-inventory-page) .category-filter-button.selected {
+  color: var(--inv-primary);
+  background: var(--inv-primary-soft);
+  border-color: var(--inv-primary-line);
 }
 
 :where(.student-inventory-page) .category-dot {
+  flex: 0 0 11px;
   width: 11px;
   height: 11px;
-  border: 1px solid #777;
-  border-radius: 2px;
+  border: 1px solid var(--inv-line);
+  border-radius: 3px;
 }
 
-:where(.student-inventory-page) .sidebar-footer {
-  margin-top: 24px;
-  color: #666;
-  font-size: 10px;
+:where(.student-inventory-page) .category-filter-button.selected .category-dot {
+  background: var(--inv-primary);
+  border-color: var(--inv-primary);
 }
 
-:where(.student-inventory-page) .status-dot,
 :where(.student-inventory-page) .status-indicator {
   display: inline-block;
   width: 7px;
   height: 7px;
   margin-right: 5px;
   border-radius: 50%;
-  background: #42804e;
+  background: var(--inv-primary);
 }
 
 :where(.student-inventory-page) .main-content {
@@ -151,69 +205,74 @@
 :where(.student-inventory-page) .page-heading h1 {
   margin: 0;
   color: #111;
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 500;
 }
 
 :where(.student-inventory-page) .page-description,
 :where(.student-inventory-page) .toolbar-description {
-  margin-top: 2px;
-  color: #444;
+  margin-top: 3px;
+  color: var(--inv-muted);
   font-size: 11px;
 }
 
 :where(.student-inventory-page) .inventory-summary {
   display: flex;
   align-items: baseline;
-  gap: 5px;
-  color: #666;
-  font-size: 11px;
+  gap: 7px;
+  color: var(--inv-muted);
+  font-size: 9px;
 }
 
 :where(.student-inventory-page) .summary-number {
-  color: #222;
+  color: var(--inv-ink);
   font-weight: 700;
 }
 
 :where(.student-inventory-page) .summary-label {
-  font-size: 11px;
+  font-size: 9px;
 }
 
 :where(.student-inventory-page) .catalogue-panel {
-  background: #fff;
+  overflow: hidden;
+  background: var(--inv-surface);
+  border: 1px solid var(--inv-line);
+  border-radius: 6px;
 }
 
 :where(.student-inventory-page) .catalogue-toolbar {
   display: flex;
-  min-height: 72px;
+  min-height: 56px;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 10px 0;
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--inv-line-soft);
 }
 
 :where(.student-inventory-page) .catalogue-toolbar h2 {
   margin: 0;
-  color: #111;
-  font-size: 16px;
-  font-weight: 500;
+  color: var(--inv-ink);
+  font-size: 14px;
+  font-weight: 650;
 }
 
 :where(.student-inventory-page) .search-field {
   display: flex;
   width: min(390px, 55%);
-  height: 30px;
+  height: 31px;
   align-items: center;
   gap: 7px;
   padding: 0 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--inv-line);
+  border-radius: 4px;
 }
 
 :where(.student-inventory-page) .search-icon {
   width: 14px;
   height: 14px;
   fill: none;
-  stroke: #555;
+  stroke: var(--inv-muted);
   stroke-width: 1.5;
 }
 
@@ -222,38 +281,127 @@
   min-width: 0;
   border: 0;
   outline: 0;
-  font-size: 11px;
+  color: var(--inv-ink);
+  font-size: 9px;
+}
+
+:where(.student-inventory-page) .search-field input::placeholder {
+  color: var(--inv-muted);
+}
+
+:where(.student-inventory-page) .search-field:focus-within {
+  border-color: var(--inv-primary);
+  outline: 2px solid var(--inv-primary-soft);
 }
 
 :where(.student-inventory-page) .search-shortcut {
   display: none;
 }
 
+:where(.student-inventory-page) .inventory-list-controls {
+  display: flex;
+  min-height: 39px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 13px 8px;
+  border-bottom: 1px solid var(--inv-line);
+}
+
+:where(.student-inventory-page) .availability-filter,
+:where(.student-inventory-page) .items-per-page {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--inv-muted);
+  font-size: 9px;
+}
+
+:where(.student-inventory-page) .availability-filter select,
+:where(.student-inventory-page) .items-per-page select {
+  height: 23px;
+  padding: 0 19px 0 7px;
+  color: var(--inv-ink);
+  background: var(--inv-surface);
+  border: 1px solid var(--inv-line);
+  border-radius: 4px;
+  font-size: 9px;
+}
+
+:where(.student-inventory-page) .availability-filter select:focus-visible,
+:where(.student-inventory-page) .items-per-page select:focus-visible,
+:where(.student-inventory-page) .category-filter-button:focus-visible {
+  outline: 2px solid var(--inv-primary);
+  outline-offset: 2px;
+}
+
 :where(.student-inventory-page) .table-scroll {
   overflow-x: auto;
+  border: 1px solid var(--inv-line);
+  border-radius: 6px;
+  margin: 12px;
 }
 
 :where(.student-inventory-page) .inventory-table {
   width: 100%;
-  border: 1px solid #888;
-  border-collapse: collapse;
+  min-width: 900px;
+  table-layout: fixed;
+  border: 0;
+  border-collapse: separate;
+  border-spacing: 0;
   text-align: left;
+}
+
+:where(.student-inventory-page) .inventory-table .item-column {
+  width: 27%;
+}
+
+:where(.student-inventory-page) .inventory-table .category-column {
+  width: 20%;
+}
+
+:where(.student-inventory-page) .inventory-table .type-column {
+  width: 13%;
+}
+
+:where(.student-inventory-page) .inventory-table .stock-column {
+  width: 16%;
+}
+
+:where(.student-inventory-page) .inventory-table .status-column {
+  width: 14%;
+}
+
+:where(.student-inventory-page) .inventory-table .action-column {
+  width: 10%;
 }
 
 :where(.student-inventory-page) .inventory-table th,
 :where(.student-inventory-page) .inventory-table td {
   height: 34px;
   padding: 4px 8px;
-  border: 1px solid #999;
-  color: #222;
+  border: 0;
+  border-bottom: 1px solid var(--inv-line-soft);
+  color: var(--inv-ink);
   font-size: 11px;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 :where(.student-inventory-page) .inventory-table th {
-  height: 36px;
-  background: #f3f3f3;
+  height: 34px;
+  padding: 6px 7px;
+  color: var(--inv-muted);
+  background: var(--inv-canvas);
   font-weight: 600;
+  white-space: normal;
+}
+
+:where(.student-inventory-page) .inventory-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+:where(.student-inventory-page) .inventory-table tbody tr:hover {
+  background: var(--inv-canvas);
 }
 
 :where(.student-inventory-page) .item-cell {
@@ -267,28 +415,29 @@
 }
 
 :where(.student-inventory-page) .item-cell > div {
-  display: flex;
-  align-items: baseline;
-  gap: 7px;
+  min-width: 0;
 }
 
 :where(.student-inventory-page) .item-name,
 :where(.student-inventory-page) .stock-value {
-  color: #222;
+  color: var(--inv-ink);
   font-weight: 400;
 }
 
 :where(.student-inventory-page) .item-code {
-  color: #777;
+  display: block;
+  margin-top: 4px;
+  color: var(--inv-muted);
   font-size: 9px;
+  overflow-wrap: anywhere;
 }
 
 :where(.student-inventory-page) .category-pill {
-  color: #333;
+  color: var(--inv-ink);
 }
 
 :where(.student-inventory-page) .type-cell {
-  color: #333 !important;
+  color: var(--inv-muted) !important;
   text-transform: capitalize;
 }
 
@@ -297,26 +446,56 @@
   align-items: center;
   padding: 3px 7px;
   border-radius: 3px;
-  font-size: 10px;
+  white-space: nowrap;
 }
 
 :where(.student-inventory-page) .status-pill.in-stock {
-  background: #205b32;
+  background: var(--inv-primary);
   color: #fff;
 }
 
 :where(.student-inventory-page) .status-pill.out-of-stock {
-  background: #eee;
-  color: #555;
+  background: var(--inv-canvas);
+  color: var(--inv-muted);
 }
 
 :where(.student-inventory-page) .status-pill.out-of-stock .status-indicator {
-  background: #999;
+  background: var(--inv-muted);
+}
+
+:where(.student-inventory-page) .add-to-booking-button {
+  display: inline-flex;
+  height: 25px;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+  color: var(--inv-primary);
+  background: var(--inv-surface);
+  border: 1px solid var(--inv-primary);
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+:where(.student-inventory-page) .add-to-booking-button span {
+  font-size: 12.5px;
+  line-height: 1;
+}
+
+:where(.student-inventory-page) .add-to-booking-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+:where(.student-inventory-page) .add-to-booking-button:hover:enabled {
+  background: var(--inv-primary-soft);
 }
 
 :where(.student-inventory-page) .table-message {
   height: 90px !important;
   text-align: center;
+  color: var(--inv-muted) !important;
 }
 
 :where(.student-inventory-page) .error-message {
@@ -325,11 +504,49 @@
 
 :where(.student-inventory-page) .table-footer {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 0;
-  color: #666;
-  font-size: 10px;
+  padding: 10px 12px;
+  color: var(--inv-muted);
+  border-top: 1px solid var(--inv-line-soft);
+  font-size: 9px;
+}
+
+:where(.student-inventory-page) .inventory-pagination {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+:where(.student-inventory-page) .inventory-pagination button,
+:where(.student-inventory-page) .inventory-pagination span {
+  display: grid;
+  min-width: 24px;
+  height: 24px;
+  place-items: center;
+  padding: 0 6px;
+  color: var(--inv-ink);
+  background: var(--inv-surface);
+  border: 1px solid var(--inv-line);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+:where(.student-inventory-page) .inventory-pagination button:disabled {
+  color: var(--inv-muted);
+  cursor: default;
+}
+
+:where(.student-inventory-page) .inventory-pagination button:hover:not(:disabled) {
+  background: var(--inv-primary-soft);
+}
+
+:where(.student-inventory-page) .table-footer-note {
+  padding: 0 12px 10px;
+  margin: 0;
+  color: var(--inv-muted);
+  font-size: 9px;
 }
 
 @media (max-width: 700px) {
@@ -355,18 +572,24 @@
   :where(.student-inventory-page) .catalogue-toolbar {
     align-items: flex-start;
     flex-direction: column;
-    padding: 10px 0;
+    padding: 10px 13px;
   }
 
   :where(.student-inventory-page) .search-field {
     width: 100%;
   }
 
+  :where(.student-inventory-page) .inventory-list-controls {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
   :where(.student-inventory-page) .inventory-table {
-    min-width: 620px;
+    min-width: 900px;
   }
 
   :where(.student-inventory-page) .table-footer {
     flex-direction: column;
+    align-items: flex-start;
   }
 }
