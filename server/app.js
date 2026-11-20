@@ -14,6 +14,8 @@ const { createInventoryRouter } = require('./inventory');
 
 const { createBookingsRouter } = require('./bookings');
 
+const { apiErrorHandler } = require('./errors');
+
 const app = express();
 
 const clientOrigins = (process.env.CLIENT_ORIGINS || process.env.CLIENT_ORIGIN || 'http://localhost:5173')
@@ -57,5 +59,8 @@ app.use((_request, response) => {
         error: { code: 'NOT_FOUND', message: 'This API route has not been implemented.' },
     });
 });
+
+// Error middleware must follow the parser and routes to catch their failures.
+app.use(apiErrorHandler);
 
 module.exports = app;

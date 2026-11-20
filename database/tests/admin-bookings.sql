@@ -2,7 +2,7 @@
 begin;
 
 update auth.users set email_confirmed_at = now(), banned_until = null
-where id in (select id from public.profiles where id_number = 'MOCK-ADMIN-001');
+where id in (select id from public.profiles where id_number in ('MOCK-ADMIN-001', 'MOCK-STUDENT-001'));
 
 do $$
 declare
@@ -13,14 +13,39 @@ declare
     stock_before jsonb;
     ledger_before bigint;
     actor uuid;
+    student uuid;
+    draft_items jsonb;
+    saved jsonb;
+    today date := (now() at time zone 'Asia/Manila')::date;
 begin
     select id into strict actor from public.profiles where id_number = 'MOCK-ADMIN-001';
 
-    select * into strict booking from public.requests
-    where purpose like '[MOCK]%' and status = 'pending' order by request_no limit 1;
+    select id into strict student from public.profiles where id_number = 'MOCK-STUDENT-001';
 
-    select * into strict second_booking from public.requests
-    where purpose like '[MOCK]%' and status = 'pending' and id <> booking.id order by request_no limit 1;
+    -- Build temporary requests so prior manual reviews cannot consume this test's Pending fixtures.
+    select jsonb_agg(jsonb_build_object('inventoryId', eligible.id, 'quantity', 100))
+    into draft_items
+    from (
+        select i.id from public.items i join public.categories c on c.id = i.category_id
+        where i.is_active and c.is_active and i.available >= 100
+        order by i.code limit 2
+    ) eligible;
+
+    if draft_items is null then
+        raise exception 'Review tests require at least one active item with 100 stored quantity units available.';
+    end if;
+
+    perform set_config('request.jwt.claim.sub', student::text, true);
+
+    saved := public.submit_booking(gen_random_uuid(), 'Review integration test',
+        '[TEST] Temporary approval fixture', today, today, draft_items);
+
+    select * into strict booking from public.requests where id = (saved->>'id')::uuid;
+
+    saved := public.submit_booking(gen_random_uuid(), 'Review integration test',
+        '[TEST] Temporary disapproval fixture', today, today, draft_items);
+
+    select * into strict second_booking from public.requests where id = (saved->>'id')::uuid;
 
     select jsonb_agg(jsonb_build_object('id', ri.id, 'quantity', ri.qty_requested)) into allocations
     from public.request_items ri where ri.request_id = booking.id;
