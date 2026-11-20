@@ -1,7 +1,22 @@
 const STORAGE_KEY = 'lab-equipment-student-cart'
 
+function storageKey(userId) {
+  if (typeof userId !== 'string' || !userId.trim()) {
+    throw new Error('Sign in before using the booking cart.')
+  }
+
+  return `${STORAGE_KEY}:${encodeURIComponent(userId)}`
+}
+
 function getStorage(storage) {
   if (!storage || typeof storage.getItem !== 'function' || typeof storage.setItem !== 'function') {
+    throw new Error('Cart storage is unavailable in this browser.')
+  }
+  return storage
+}
+
+function getRemovableStorage(storage) {
+  if (!storage || typeof storage.removeItem !== 'function') {
     throw new Error('Cart storage is unavailable in this browser.')
   }
   return storage
@@ -18,8 +33,8 @@ function isCartItem(item) {
     typeof item.quantity === 'string'
 }
 
-export function readInventoryCart(storage = globalThis.localStorage) {
-  const saved = getStorage(storage).getItem(STORAGE_KEY)
+export function readInventoryCart(userId, storage = globalThis.localStorage) {
+  const saved = getStorage(storage).getItem(storageKey(userId))
   if (saved === null) return []
 
   let cart
@@ -36,11 +51,17 @@ export function readInventoryCart(storage = globalThis.localStorage) {
   return cart
 }
 
-export function writeInventoryCart(cart, storage = globalThis.localStorage) {
+export function writeInventoryCart(userId, cart, storage = globalThis.localStorage) {
   if (!Array.isArray(cart) || !cart.every(isCartItem)) {
     throw new TypeError('Cannot save an invalid booking cart.')
   }
-  getStorage(storage).setItem(STORAGE_KEY, JSON.stringify(cart))
+  getStorage(storage).setItem(storageKey(userId), JSON.stringify(cart))
+}
+
+export function clearInventoryCart(userId, storage = globalThis.localStorage) {
+  const cartStorage = getRemovableStorage(storage)
+  cartStorage.removeItem(storageKey(userId))
+  cartStorage.removeItem(STORAGE_KEY)
 }
 
 export function toInventoryCartItem(item) {
