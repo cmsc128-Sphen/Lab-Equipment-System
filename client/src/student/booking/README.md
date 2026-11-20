@@ -64,7 +64,7 @@ Props:
   `category` (`equipment` or `chemical`), `unit`, numeric `available`, and optional
   `quantity`. Preserve the mounted form while editing the selection.
 - `inventory`: items for the local add-item dialog, using the same format.
-- `borrower`: authenticated `{ email, studentId }`; supplied fields are read-only.
+- `borrower`: authenticated `{ studentId }`; supplied fields are read-only.
   Mount only after the profile has loaded.
 - `submitRequest(payload)`: resolves after persistence to
   `{ reference: string, status: 'Pending' }`; rejects with an Error on failure.
@@ -82,7 +82,7 @@ Proposed payload, pending agreement with Marc and JD:
 
 ```json
 {
-  "borrower": { "email": "student@up.edu.ph", "studentId": "2026-00001" },
+  "borrower": { "studentId": "2026-00001" },
   "subject": "Chemistry 16",
   "purpose": "Laboratory experiment",
   "borrowDate": "2026-11-01",
@@ -99,7 +99,7 @@ across retries still requires server-side idempotency.
 Current validation assumptions: all fields required, borrowing today or later,
 return on/after borrowing, positive whole equipment quantities, positive decimal
 chemical quantities, and quantity no greater than displayed stock. Units stay
-tied to inventory. Confirm precision, dates/timezone, email/student-ID rules and
+tied to inventory. Confirm precision, dates/timezone, student-ID rules and
 pending-stock behavior with the team before live integration.
 
 ## Checks without editing shared package scripts
