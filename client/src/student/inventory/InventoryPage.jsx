@@ -75,6 +75,8 @@ function InventoryPage() {
   }, [items, query, selectedCategory, availability])
   const totalPages = Math.max(1, Math.ceil(visibleItems.length / itemsPerPage))
   const safeCurrentPage = Math.min(currentPage, totalPages)
+  const hasActiveFilters =
+    query.trim() !== '' || selectedCategory !== 'All' || availability !== 'All'
   const pagedItems = visibleItems.slice(
     (safeCurrentPage - 1) * itemsPerPage,
     safeCurrentPage * itemsPerPage,
@@ -168,21 +170,36 @@ function InventoryPage() {
             {cartError && <p className="cart-error" role="alert">{cartError}</p>}
 
             <div className="inventory-list-controls">
-              <label className="availability-filter">
-                <span>Availability</span>
-                <select
-                  aria-label="Filter by availability"
-                  onChange={(event) => {
-                    setAvailability(event.target.value)
+              <div className="inventory-filter-actions">
+                <label className="availability-filter">
+                  <span>Availability</span>
+                  <select
+                    aria-label="Filter by availability"
+                    onChange={(event) => {
+                      setAvailability(event.target.value)
+                      setCurrentPage(1)
+                    }}
+                    value={availability}
+                  >
+                    <option value="All">All</option>
+                    <option value="in-stock">In stock</option>
+                    <option value="out-of-stock">Out of stock</option>
+                  </select>
+                </label>
+                <button
+                  className="reset-filters-button"
+                  disabled={!hasActiveFilters}
+                  onClick={() => {
+                    setQuery('')
+                    setSelectedCategory('All')
+                    setAvailability('All')
                     setCurrentPage(1)
                   }}
-                  value={availability}
+                  type="button"
                 >
-                  <option value="All">All</option>
-                  <option value="in-stock">In stock</option>
-                  <option value="out-of-stock">Out of stock</option>
-                </select>
-              </label>
+                  Reset filters
+                </button>
+              </div>
               <label className="items-per-page">
                 <span>Items per page</span>
                 <select

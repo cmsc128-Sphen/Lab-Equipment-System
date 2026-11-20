@@ -38,3 +38,19 @@ test('result counts represent the combined filtered set', () => {
   assert.equal(results.length, 1)
   assert.equal(results[0].name, 'Beaker')
 })
+
+test('clearing search and filters restores the full inventory result set', () => {
+  const filtered = filterInventoryItems(items, {
+    query: 'test',
+    category: 'Glassware',
+    availability: 'out-of-stock',
+  })
+  const reset = filterInventoryItems(items, {
+    query: '',
+    category: 'All',
+    availability: 'All',
+  })
+
+  assert.deepEqual(filtered.map((item) => item.name), ['Test tube'])
+  assert.deepEqual(reset, items)
+})
