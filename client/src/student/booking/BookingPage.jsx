@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react'
-import { bookingPayload, localDate, validateBooking } from './booking.js'
+import { useEffect, useRef, useState } from 'react'
+import { bookingPayload, localDate, refreshDraft, validateBooking } from './booking.js'
 import './BookingPage.css'
 
 const PAGE_SIZE = 8
@@ -9,8 +9,9 @@ const purposes = ['Laboratory experiment', 'Course requirement', 'Thesis', 'Rese
 /** Inventory: { id, name, category: 'equipment'|'chemical', unit, available, quantity? }.
  * submitRequest(payload) resolves to { reference, status: 'Pending' } after save.
  * onChooseItems is the inventory-navigation handoff; inventory enables a local picker.
+ * onDraftChange(items) receives the draft after every change, and [] once a request is saved.
  */
-export default function BookingPage({ initialItems = [], inventory = [], inventoryNote = '', borrower = {}, submitRequest, onChooseItems, demo = false }) {
+export default function BookingPage({ initialItems = [], inventory = [], inventoryNote = '', draftNote = '', borrower = {}, submitRequest, onChooseItems, onDraftChange, demo = false }) {
   const [form, setForm] = useState({ ...blankForm, studentId: borrower.studentId ?? '' })
   const [items, setItems] = useState(() => initialItems.map((item) => ({ ...item, quantity: String(item.quantity ?? 1) })))
   const [errors, setErrors] = useState({})
@@ -24,6 +25,19 @@ export default function BookingPage({ initialItems = [], inventory = [], invento
   const picker = useRef(null)
   const feedback = useRef(null)
   const locked = submitting || Boolean(confirmation)
+  const [refreshedFrom, setRefreshedFrom] = useState(null)
+
+  // Refresh stock, names and units from inventory once it loads; availability stays advisory until the server checks it.
+  if (inventory.length && inventory !== refreshedFrom) {
+    setRefreshedFrom(inventory)
+    const { items: refreshed, removed } = refreshDraft(items, inventory)
+    setItems(refreshed)
+    if (removed.length) setFailure(`No longer available, removed from your request: ${removed.map((item) => item.name).join(', ')}.`)
+  }
+
+  useEffect(() => {
+    onDraftChange?.(confirmation ? [] : items)
+  }, [items, confirmation, onDraftChange])
 
   function changeField(event) {
     const { name, value } = event.target
@@ -104,12 +118,13 @@ export default function BookingPage({ initialItems = [], inventory = [], invento
         <p>Enter your class details and choose the items you need. Lab staff review every request before pickup.</p>
       </div>
       {demo && <p className="demo-notice" role="note"><span aria-hidden="true">i</span>Booking preview with sample inventory. Demo submissions are not saved to the lab database.</p>}
+      {draftNote && <p className="demo-notice" role="alert"><span aria-hidden="true">i</span>{draftNote}</p>}
       <form onSubmit={submit} noValidate aria-busy={submitting}>
         <div className="booking-workspace">
           <section className="booking-card borrower-fields" aria-labelledby="details-heading">
             <div className="card-heading"><h2 id="details-heading">Request details</h2></div>
             <div className="card-body">
-              {field('studentId', 'Student ID', 'text', { autoComplete: 'off', readOnly: Boolean(borrower.studentId), maxLength: 40, placeholder: '2026-00001' })}
+              {field('studentId', 'Student ID', 'text', { autoComplete: 'off', readOnly: true })}
               {field('subject', 'Subject', 'text', { maxLength: 160, placeholder: 'e.g. Chem 16' })}
               <div className="booking-field">
                 <label htmlFor="purpose">Purpose</label>
@@ -140,7 +155,7 @@ export default function BookingPage({ initialItems = [], inventory = [], invento
                 <div className="apparatus-row"><span className="item-name">{item.name}</span><span className="item-quantity">{item.quantity || '—'} {item.unit}</span><button className="edit-button" type="button" disabled={locked} aria-expanded={editing === item.id} aria-controls={`editor-${item.id}`} onClick={() => setEditing(editing === item.id ? null : item.id)}>{editing === item.id ? 'Done' : 'Edit'}<span className="booking-sr-only"> {item.name}</span></button></div>
                 {(editing === item.id || errors[`item-${item.id}`]) && <div className="item-editor" id={`editor-${item.id}`}>
                   <label htmlFor={`quantity-${item.id}`}>Quantity ({item.unit})</label>
-                  <input id={`quantity-${item.id}`} type="number" min="0" step={item.category === 'chemical' ? 'any' : '1'} value={item.quantity} disabled={locked} aria-invalid={Boolean(errors[`item-${item.id}`])} aria-describedby={`stock-${item.id}${errors[`item-${item.id}`] ? ` error-${item.id}` : ''}`} onChange={(event) => { const value = event.target.value; setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, quantity: value } : entry)); setErrors((current) => ({ ...current, [`item-${item.id}`]: undefined })) }} />
+                  <input id={`quantity-${item.id}`} type="number" min="0" step={item.unit === 'pcs' ? '1' : '0.01'} value={item.quantity} disabled={locked} aria-invalid={Boolean(errors[`item-${item.id}`])} aria-describedby={`stock-${item.id}${errors[`item-${item.id}`] ? ` error-${item.id}` : ''}`} onChange={(event) => { const value = event.target.value; setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, quantity: value } : entry)); setErrors((current) => ({ ...current, [`item-${item.id}`]: undefined })) }} />
                   <small id={`stock-${item.id}`}>{item.available} {item.unit} in stock</small>
                   <button type="button" className="text-button danger" disabled={locked} onClick={() => { setItems((current) => current.filter((entry) => entry.id !== item.id)); setErrors((current) => ({ ...current, [`item-${item.id}`]: undefined })) }}>Remove<span className="booking-sr-only"> {item.name}</span></button>
                   {errors[`item-${item.id}`] && <span className="field-error" id={`error-${item.id}`}>{errors[`item-${item.id}`]}</span>}

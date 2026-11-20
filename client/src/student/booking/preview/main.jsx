@@ -10,6 +10,7 @@ createRoot(document.getElementById('booking-preview-root')).render(
     <div className="booking-preview-shell booking-app">
       <PreviewHeader />
       <BookingPage
+        borrower={{ studentId: '2026-00001' }}
         inventory={demoInventory}
         initialItems={demoInventory.slice(0, 2).map((item, index) => ({
           ...item,

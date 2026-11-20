@@ -11,7 +11,6 @@ function validDate(value) {
 
 export function validateBooking(form, items, today = localDate()) {
   const errors = {}
-  if (!form.studentId.trim()) errors.studentId = 'Enter your student ID.'
   if (!form.subject.trim()) errors.subject = 'Enter your subject.'
   if (!form.purpose) errors.purpose = 'Choose the purpose of your request.'
   else if (form.purpose === 'Other' && !form.purposeOther?.trim()) errors.purposeOther = 'Describe the purpose of your request.'
@@ -27,19 +26,34 @@ export function validateBooking(form, items, today = localDate()) {
     if (ids.has(item.id)) errors.items = 'Each item may only appear once.'
     ids.add(item.id)
     if (!Number.isFinite(quantity) || quantity <= 0) errors[key] = 'Enter a quantity greater than zero.'
-    else if (item.category !== 'chemical' && !Number.isSafeInteger(quantity)) errors[key] = 'Equipment quantities must be whole numbers.'
+    else if (item.unit === 'pcs' && !Number.isSafeInteger(quantity)) errors[key] = 'Quantities in pcs must be whole numbers.'
+    else if (!Number.isSafeInteger(Math.round(quantity * 100)) || Math.abs(quantity * 100 - Math.round(quantity * 100)) > 1e-6) errors[key] = 'Use at most 2 decimal places.'
     else if (quantity > item.available) errors[key] = `Only ${item.available} ${item.unit} currently available.`
     if (!item.unit) errors[key] = 'This item needs a unit before it can be requested.'
   }
   return errors
 }
 
-// Proposed contract: the server must enforce identity, units and availability.
+// Quantities are sent as integer hundredths (2 pcs = 200, 25.5 mL = 2550), matching request_items.
+// The server takes the borrower from the session and must enforce units and availability.
 export function bookingPayload(form, items) {
   return {
-    borrower: { studentId: form.studentId.trim() },
     subject: form.subject.trim(), purpose: form.purpose === 'Other' ? form.purposeOther.trim() : form.purpose,
     borrowDate: form.borrowDate, returnDate: form.returnDate,
-    items: items.map(({ id, quantity, unit }) => ({ inventoryId: id, quantity: Number(quantity), unit })),
+    items: items.map(({ id, quantity }) => ({ inventoryId: id, quantity: Math.round(Number(quantity) * 100) })),
   }
+}
+
+// Draft items keep their quantity; name, unit and stock come from the current inventory.
+// Items missing from it (inactive or removed) are dropped and returned separately.
+export function refreshDraft(draft, inventory) {
+  const current = new Map(inventory.map((item) => [item.id, item]))
+  const items = []
+  const removed = []
+  for (const item of draft) {
+    const live = current.get(item.id)
+    if (live) items.push({ ...live, quantity: item.quantity })
+    else removed.push(item)
+  }
+  return { items, removed }
 }
