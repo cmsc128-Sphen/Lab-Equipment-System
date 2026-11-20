@@ -154,6 +154,14 @@ function InventoryPage() {
 
             <div className="table-scroll">
               <table className="inventory-table">
+                <colgroup>
+                  <col className="item-column" />
+                  <col className="category-column" />
+                  <col className="type-column" />
+                  <col className="stock-column" />
+                  <col className="status-column" />
+                  <col className="action-column" />
+                </colgroup>
                 <thead>
                   <tr>
                     <th scope="col">ITEM</th>
@@ -161,22 +169,23 @@ function InventoryPage() {
                     <th scope="col">TYPE</th>
                     <th scope="col">AVAILABLE STOCK</th>
                     <th scope="col">STATUS</th>
+                    <th scope="col">ACTION</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading && (
                     <tr>
-                      <td className="table-message" colSpan="5">Loading inventory…</td>
+                      <td className="table-message" colSpan="6">Loading inventory…</td>
                     </tr>
                   )}
                   {!loading && error && (
                     <tr>
-                      <td className="table-message error-message" colSpan="5">{error}</td>
+                      <td className="table-message error-message" colSpan="6">{error}</td>
                     </tr>
                   )}
                   {!loading && !error && visibleItems.length === 0 && (
                     <tr>
-                      <td className="table-message" colSpan="5">
+                      <td className="table-message" colSpan="6">
                         {query ? 'No inventory items match this search.' : 'No inventory items found.'}
                       </td>
                     </tr>
@@ -206,6 +215,18 @@ function InventoryPage() {
                           <span className="status-indicator" aria-hidden="true" />
                           {item.stock.available > 0 ? 'In stock' : 'Out of stock'}
                         </span>
+                      </td>
+                      <td>
+                        <button
+                          aria-label={`Add ${item.name} to booking`}
+                          className="add-to-booking-button"
+                          disabled
+                          title="Add to booking (coming soon)"
+                          type="button"
+                        >
+                          <span aria-hidden="true">+</span>
+                          Add
+                        </button>
                       </td>
                     </tr>
                   ))}
