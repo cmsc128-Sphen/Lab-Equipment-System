@@ -13,9 +13,9 @@
 
 ## Current status
 
-The student inventory page and booking item picker load the saved Supabase catalogue through the authenticated backend. The staff booking-review screen still uses its separate sample bookings. Booking submission and staff decisions are not persisted yet.
+The student inventory page and booking item picker load the saved Supabase catalogue through the authenticated backend. Staff booking review loads saved requests, item quantities and available stock. Approval, disapproval and pickup-readiness decisions are persisted. Student booking submission and email delivery are not connected yet.
 
-The backend exposes HTTP health endpoints, a Supabase API connection check, the account profile endpoint and authenticated `GET /api/items`. Booking and notification APIs are not implemented yet; unused routes return 404.
+The backend exposes HTTP health endpoints, a Supabase API connection check, the account profile endpoint, authenticated `GET /api/items`, and staff booking review endpoints. Unused routes return 404.
 
 The six-table foundation is created in the connected Supabase project and contains labelled mock data for development. No seeder file is used. Catalogue reads use the account agent's token helper and backend authentication middleware.
 
@@ -75,6 +75,17 @@ This health endpoint reads public Auth settings to confirm API reachability and 
 
 Both screens use `client/src/data/items.js`. It loads every catalogue page before displaying results, so local search, category filters and pagination cover the complete result set. Incomplete, changing, malformed or oversized catalogues produce an explicit error rather than silently displaying partial search results. The initial client-side catalogue limit is 5,000 items; a larger catalogue needs server-side search/filtering. Page-unmount cancellation and request timeouts stop stale loads.
 
+## Admin booking review
+
+Sign in with an active, verified `admin` or `lab_aid` account and open `/inventory/admin` (`/admin/bookings` redirects there). Student registrations remain students and cannot access this page or its APIs. The disabled mock identities are reference records, not login accounts.
+
+- `GET /api/admin/bookings?page=1` returns 200 requests per page with borrower snapshots, request lines and current available stock. The page loads the complete queue before local search and filtering, with a 5,000-request limit. Loading failures show an error without demo fallback; use **Refresh bookings** to retry.
+- `POST /api/admin/bookings/:id/decision` accepts `action` (`approved`, `denied`, `ready`), the original `updatedAt`, `staffNotes`, `denialReason`, and approval `allocations` containing request-line `id` and integer-hundredths `quantity`.
+- Approval atomically locks the request and stock rows, validates allocations, moves stock from available to reserved, and appends reservation ledger entries. Stale forms, insufficient stock and repeated decisions are rejected. Disapproval requires a reason. Ready-for-pickup only follows approval and does not change stock.
+- Decisions record the authenticated reviewer. Email delivery is unavailable; the page states that no email was sent. Refresh after a rejected or uncertain save before trying again.
+
+[database/admin-bookings.sql](database/admin-bookings.sql) is the additive review-function definition already applied to the connected project. Apply it after the baseline when initializing another project. Only the guarded review operation can write; authenticated users retain read-only table grants. No service key is needed in the frontend or review API.
+
 ## Database foundation
 
 [database/schema.sql](database/schema.sql) is the baseline definition already applied to the hosted project. Use it to inspect the design or initialize a new, empty project; do not rerun it against the existing project. It contains no sample records.
@@ -91,7 +102,7 @@ Both screens use `client/src/data/items.js`. It loads every catalogue page befor
 
 ## Checks
 
-Backend health, authentication and inventory checks, from `server/`:
+Backend health, authentication, inventory and booking API checks, from `server/`:
 
 ```bash
 npm test
@@ -101,5 +112,7 @@ Frontend build, catalogue, inventory filter and booking checks, from `client/`:
 
 ```bash
 npm run build
-node --test src/data/inventoryClient.test.js src/student/inventory/inventoryFilters.test.js src/student/booking/booking.test.js
+node --test src/data/inventoryClient.test.js src/services/adminBookings.test.js src/student/inventory/inventoryFilters.test.js src/student/booking/booking.test.js src/auth/registration.test.js
 ```
+
+[database/tests/admin-bookings.sql](database/tests/admin-bookings.sql) verifies review permissions, stale decisions, allocation validation, reservation accounting, disapproval and pickup readiness using the existing mock records. It rolls back all changes, including temporary mock-account verification. It expects two pending mock bookings; use a development database with those fixtures.

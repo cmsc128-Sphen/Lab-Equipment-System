@@ -29,11 +29,11 @@ test('server exposes health endpoints and rejects unimplemented API routes', asy
             });
         }
 
-        await context.test('inventory requires authentication and unused booking APIs return 404', async () => {
-            // Inventory now exists; booking writes remain outside this change.
+        await context.test('inventory and admin bookings require authentication', async () => {
+            // Both data APIs reject requests without a user session.
             for (const [path, status, code] of [
                 ['/api/items', 401, 'UNAUTHENTICATED'],
-                ['/api/admin/bookings', 404, 'NOT_FOUND'],
+                ['/api/admin/bookings', 401, 'UNAUTHENTICATED'],
             ]) {
                 const response = await fetch(`${baseUrl}${path}`);
                 const body = await response.json();

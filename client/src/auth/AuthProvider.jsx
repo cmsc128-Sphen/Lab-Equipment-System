@@ -4,6 +4,8 @@ import { AuthContext } from './AuthContext.js'
 
 import { getSupabase } from './supabase.js'
 
+import { loadAccount } from './loadAccount.js'
+
 export default function AuthProvider({ children }) {
     const [account, setAccount] = useState({
         session: null,
@@ -61,24 +63,12 @@ export default function AuthProvider({ children }) {
                     controller = new AbortController()
 
                     try {
-                        const response = await fetch('/api/auth/me', {
-                            headers: { Authorization: `Bearer ${session.access_token}` },
-                            signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]),
-                            cache: 'no-store',
-                        })
+                        const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(15000)])
 
-                        const result = await response.json()
-
-                        if (!response.ok) {
-                            throw new Error(result.error?.message || 'Unable to load your account. Try again.')
-                        }
-
-                        if (!result.profile || result.user?.id !== session.user.id) {
-                            throw new Error('The server returned an invalid account profile.')
-                        }
+                        const profile = await loadAccount(session, signal)
 
                         if (active && currentVersion === version) {
-                            setAccount({ session, profile: result.profile, loading: false, error: '' })
+                            setAccount({ session, profile, loading: false, error: '' })
                         }
                     } catch (error) {
                         if (active && currentVersion === version) {

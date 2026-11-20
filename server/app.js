@@ -12,6 +12,8 @@ const { createAuthenticationMiddleware } = require('./auth');
 
 const { createInventoryRouter } = require('./inventory');
 
+const { createBookingsRouter } = require('./bookings');
+
 const app = express();
 
 const clientOrigins = (process.env.CLIENT_ORIGINS || process.env.CLIENT_ORIGIN || 'http://localhost:5173')
@@ -47,6 +49,8 @@ app.get('/api/auth/me', createAuthenticationMiddleware(), (request, response) =>
 });
 
 app.use('/api', createInventoryRouter());
+
+app.use('/api', createBookingsRouter());
 
 app.use((_request, response) => {
     response.status(404).json({
