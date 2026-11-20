@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getItems } from '../../data/items.js'
+import { filterInventoryItems } from './inventoryFilters.js'
 import './InventoryPage.css'
 
 const useMockData = import.meta.env.USE_MOCK_DATA === 'true'
@@ -9,6 +10,8 @@ function InventoryPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [query, setQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('All')
+  const [availability, setAvailability] = useState('All')
   const [itemsPerPage, setItemsPerPage] = useState(15)
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -34,17 +37,16 @@ function InventoryPage() {
     }
   }, [])
 
-  const categories = [...new Set(items.map((item) => item.categoryName))]
+  const categories = [...new Set(items.map((item) => item.categoryName))].sort((left, right) =>
+    left.localeCompare(right),
+  )
   const visibleItems = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase()
-    if (!normalizedQuery) return items
-
-    return items.filter((item) =>
-      [item.name, item.code, item.categoryName, item.type].some((value) =>
-        value.toLowerCase().includes(normalizedQuery),
-      ),
-    )
-  }, [items, query])
+    return filterInventoryItems(items, {
+      query,
+      category: selectedCategory,
+      availability,
+    })
+  }, [items, query, selectedCategory, availability])
   const totalPages = Math.max(1, Math.ceil(visibleItems.length / itemsPerPage))
   const safeCurrentPage = Math.min(currentPage, totalPages)
   const pagedItems = visibleItems.slice(
@@ -71,24 +73,38 @@ function InventoryPage() {
       <div className="workspace">
         <aside className="sidebar" aria-label="Inventory navigation">
           <div className="sidebar-heading">CATALOGUE</div>
-          <div className="sidebar-link selected">
+          <button
+            aria-pressed={selectedCategory === 'All'}
+            className={`sidebar-link ${selectedCategory === 'All' ? 'selected' : ''}`}
+            onClick={() => {
+              setSelectedCategory('All')
+              setCurrentPage(1)
+            }}
+            type="button"
+          >
             <span className="sidebar-icon" aria-hidden="true">▦</span>
             All inventory
-            <span className="sidebar-count">{items.length}</span>
-          </div>
+            <span className="sidebar-count">{visibleItems.length}</span>
+          </button>
           <div className="sidebar-heading category-heading">CATEGORIES</div>
           <ul className="category-list">
             {categories.map((category) => (
               <li key={category}>
-                <span className="category-dot" aria-hidden="true" />
-                <span>{category}</span>
+                <button
+                  aria-pressed={selectedCategory === category}
+                  className={`category-filter-button ${selectedCategory === category ? 'selected' : ''}`}
+                  onClick={() => {
+                    setSelectedCategory(category)
+                    setCurrentPage(1)
+                  }}
+                  type="button"
+                >
+                  <span className="category-dot" aria-hidden="true" />
+                  <span>{category}</span>
+                </button>
               </li>
             ))}
           </ul>
-          <div className="sidebar-footer">
-            <span className="status-dot" aria-hidden="true" />
-            Inventory system
-          </div>
         </aside>
 
         <main className="main-content" id="inventory">
@@ -101,7 +117,7 @@ function InventoryPage() {
               </p>
             </div>
             <div className="inventory-summary">
-              <span className="summary-number">{items.length}</span>
+              <span className="summary-number">{visibleItems.length}</span>
               <span className="summary-label">catalogue items</span>
             </div>
           </div>
@@ -135,6 +151,21 @@ function InventoryPage() {
             </div>
 
             <div className="inventory-list-controls">
+              <label className="availability-filter">
+                <span>Availability</span>
+                <select
+                  aria-label="Filter by availability"
+                  onChange={(event) => {
+                    setAvailability(event.target.value)
+                    setCurrentPage(1)
+                  }}
+                  value={availability}
+                >
+                  <option value="All">All</option>
+                  <option value="in-stock">In stock</option>
+                  <option value="out-of-stock">Out of stock</option>
+                </select>
+              </label>
               <label className="items-per-page">
                 <span>Items per page</span>
                 <select
@@ -186,7 +217,9 @@ function InventoryPage() {
                   {!loading && !error && visibleItems.length === 0 && (
                     <tr>
                       <td className="table-message" colSpan="6">
-                        {query ? 'No inventory items match this search.' : 'No inventory items found.'}
+                        {items.length === 0
+                          ? 'No inventory items found.'
+                          : 'No inventory items match your search and filters.'}
                       </td>
                     </tr>
                   )}

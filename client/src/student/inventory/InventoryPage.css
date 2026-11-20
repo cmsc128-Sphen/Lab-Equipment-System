@@ -85,15 +85,34 @@
 
 :where(.student-inventory-page) .sidebar-link {
   display: flex;
+  width: 100%;
   min-height: 34px;
   align-items: center;
   gap: 7px;
+  padding: 2px 6px;
   color: var(--inv-ink);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
   font-size: 9px;
+  text-align: left;
+  cursor: pointer;
 }
 
 :where(.student-inventory-page) .sidebar-link.selected {
+  color: var(--inv-primary);
+  background: var(--inv-primary-soft);
+  border-color: var(--inv-primary-line);
   font-weight: 600;
+}
+
+:where(.student-inventory-page) .sidebar-link:hover {
+  background: var(--inv-canvas);
+}
+
+:where(.student-inventory-page) .sidebar-link:focus-visible {
+  outline: 2px solid var(--inv-primary);
+  outline-offset: 2px;
 }
 
 :where(.student-inventory-page) .sidebar-count {
@@ -113,27 +132,49 @@
 }
 
 :where(.student-inventory-page) .category-list li {
+  min-width: 0;
+}
+
+:where(.student-inventory-page) .category-filter-button {
   display: flex;
+  width: 100%;
+  min-height: 24px;
   align-items: center;
   gap: 7px;
+  padding: 2px 6px;
   color: var(--inv-ink);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font: inherit;
   font-size: 9px;
+  text-align: left;
+  cursor: pointer;
+}
+
+:where(.student-inventory-page) .category-filter-button:hover {
+  background: var(--inv-canvas);
+}
+
+:where(.student-inventory-page) .category-filter-button.selected {
+  color: var(--inv-primary);
+  background: var(--inv-primary-soft);
+  border-color: var(--inv-primary-line);
 }
 
 :where(.student-inventory-page) .category-dot {
+  flex: 0 0 11px;
   width: 11px;
   height: 11px;
   border: 1px solid var(--inv-line);
   border-radius: 3px;
 }
 
-:where(.student-inventory-page) .sidebar-footer {
-  margin-top: 28px;
-  color: var(--inv-muted);
-  font-size: 9px;
+:where(.student-inventory-page) .category-filter-button.selected .category-dot {
+  background: var(--inv-primary);
+  border-color: var(--inv-primary);
 }
 
-:where(.student-inventory-page) .status-dot,
 :where(.student-inventory-page) .status-indicator {
   display: inline-block;
   width: 7px;
@@ -261,11 +302,13 @@
   display: flex;
   min-height: 39px;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
+  gap: 12px;
   padding: 0 13px 8px;
   border-bottom: 1px solid var(--inv-line);
 }
 
+:where(.student-inventory-page) .availability-filter,
 :where(.student-inventory-page) .items-per-page {
   display: flex;
   align-items: center;
@@ -274,6 +317,7 @@
   font-size: 9px;
 }
 
+:where(.student-inventory-page) .availability-filter select,
 :where(.student-inventory-page) .items-per-page select {
   height: 23px;
   padding: 0 19px 0 7px;
@@ -282,6 +326,13 @@
   border: 1px solid var(--inv-line);
   border-radius: 4px;
   font-size: 9px;
+}
+
+:where(.student-inventory-page) .availability-filter select:focus-visible,
+:where(.student-inventory-page) .items-per-page select:focus-visible,
+:where(.student-inventory-page) .category-filter-button:focus-visible {
+  outline: 2px solid var(--inv-primary);
+  outline-offset: 2px;
 }
 
 :where(.student-inventory-page) .table-scroll {
@@ -526,6 +577,11 @@
 
   :where(.student-inventory-page) .search-field {
     width: 100%;
+  }
+
+  :where(.student-inventory-page) .inventory-list-controls {
+    flex-wrap: wrap;
+    justify-content: flex-start;
   }
 
   :where(.student-inventory-page) .inventory-table {
