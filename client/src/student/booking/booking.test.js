@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { bookingPayload, validateBooking } from './booking.js'
+import { bookingPayload, refreshDraft, validateBooking } from './booking.js'
 import { createRequestSubmitter } from '../../services/bookingRequests.js'
 
 const form = { studentId: '2026-00001', subject: 'Chemistry 16', purpose: 'Research', borrowDate: '2026-11-01', returnDate: '2026-11-02' }
@@ -8,12 +8,23 @@ const equipment = { id: 'beaker', name: 'Beaker', category: 'equipment', quantit
 const chemical = { id: 'salt', name: 'Salt', category: 'chemical', quantity: '0.25', unit: 'g', available: 20 }
 const validate = (fields = form, items = [equipment, chemical]) => validateBooking(fields, items, '2026-10-30')
 
-test('accepts whole equipment and fractional chemical quantities', () => {
+test('accepts whole pcs and up to two-decimal measured quantities', () => {
   assert.deepEqual(validate(), {})
+  assert.deepEqual(validate(form, [{ ...chemical, quantity: '0.1' }, { ...chemical, id: 'water', quantity: '19.99' }]), {})
+})
+
+test('borrower identity is not validated from the form; it comes from the profile', () => {
+  assert.deepEqual(validate({ ...form, studentId: ' ' }), {})
+})
+
+test('quantity precision follows the unit, not the item category', () => {
+  assert.ok(validate(form, [{ ...chemical, quantity: '0.001' }])['item-salt'])
+  assert.ok(validate(form, [{ ...chemical, quantity: '1.255' }])['item-salt'])
+  assert.ok(validate(form, [{ ...chemical, unit: 'pcs', quantity: '1.5' }])['item-salt'])
+  assert.deepEqual(validate(form, [{ ...chemical, unit: 'pcs', quantity: '2' }]), {})
 })
 
 test('rejects empty forms, past/reversed dates and nonexistent calendar dates', () => {
-  assert.ok(validate({ ...form, studentId: ' ' }).studentId)
   assert.ok(validate({ ...form, purpose: '' }).purpose)
   assert.ok(validate({ ...form, purpose: 'Other', purposeOther: ' ' }).purposeOther)
   assert.deepEqual(validate({ ...form, purpose: 'Other', purposeOther: 'Science fair' }), {})
@@ -32,12 +43,22 @@ test('rejects empty selection, duplicate items and invalid quantities', () => {
   assert.ok(validate(form, [{ ...chemical, quantity: '21' }])['item-salt'])
 })
 
-test('builds a trimmed payload with numeric quantities, inventory IDs and fixed units', () => {
+test('builds a trimmed payload with integer-hundredth quantities and no borrower or unit fields', () => {
   const payload = bookingPayload({ ...form, subject: ' Chemistry 16 ' }, [equipment, chemical])
   assert.equal(payload.subject, 'Chemistry 16')
   assert.equal(bookingPayload({ ...form, purpose: 'Other', purposeOther: ' Science fair ' }, []).purpose, 'Science fair')
-  assert.deepEqual(payload.items, [{ inventoryId: 'beaker', quantity: 2, unit: 'pcs' }, { inventoryId: 'salt', quantity: 0.25, unit: 'g' }])
-  assert.equal('available' in payload.items[0], false)
+  assert.deepEqual(payload.items, [{ inventoryId: 'beaker', quantity: 200 }, { inventoryId: 'salt', quantity: 25 }])
+  assert.equal(bookingPayload(form, [{ ...chemical, quantity: '25.5' }]).items[0].quantity, 2550)
+  assert.equal(bookingPayload(form, [{ ...chemical, quantity: '0.29' }]).items[0].quantity, 29)
+  assert.equal('borrower' in payload, false)
+})
+
+test('refreshing a draft keeps quantities, updates stock and drops missing items', () => {
+  const inventory = [{ id: 'beaker', name: 'Beaker 250 mL', category: 'equipment', categoryName: 'Glassware', unit: 'pcs', available: 1 }]
+  const { items, removed } = refreshDraft([equipment, chemical], inventory)
+  assert.deepEqual(items, [{ ...inventory[0], quantity: '2' }])
+  assert.deepEqual(removed, [chemical])
+  assert.ok(validateBooking(form, items, '2026-10-30')['item-beaker'], 'stale quantity is checked against current stock')
 })
 
 test('API adapter uses the current access token and returns the confirmed response', async () => {
