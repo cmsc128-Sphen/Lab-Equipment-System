@@ -1,3 +1,8 @@
+/* Same magnification as the admin review page (admin.css). */
+.student-inventory-page {
+  zoom: 1.5;
+}
+
 :where(.student-inventory-page) .app-shell {
   min-height: 100vh;
   background: #fff;

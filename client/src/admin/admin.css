@@ -1,7 +1,7 @@
 :where(.admin-page) .equipment-app {
   min-height: 100vh;
-  color: #333;
-  background: #f5f5f5;
+  color: var(--ad-ink);
+  background: var(--ad-canvas);
   font-family: Arial, Helvetica, sans-serif;
   font-size: 12px;
 }
@@ -23,7 +23,7 @@
 
 :where(.admin-page) .page-title-row h1 {
   margin: 0;
-  color: #303030;
+  color: var(--ad-ink);
   font-size: 21px;
   font-weight: 650;
   letter-spacing: -0.45px;
@@ -31,7 +31,7 @@
 
 :where(.admin-page) .page-title-row p {
   margin: 5px 0 0;
-  color: #777;
+  color: var(--ad-muted);
   font-size: 11px;
 }
 
@@ -45,9 +45,9 @@
 :where(.admin-page) .booking-list-panel,
 :where(.admin-page) .review-panel {
   min-width: 0;
-  background: #fff;
-  border: 1px solid #d5d5d5;
-  border-radius: 5px;
+  background: var(--ad-surface);
+  border: 1px solid var(--ad-line);
+  border-radius: 6px;
 }
 
 :where(.admin-page) .booking-list-panel {
@@ -71,7 +71,7 @@
 }
 
 :where(.admin-page) .list-panel-heading > span {
-  color: #777;
+  color: var(--ad-muted);
   font-size: 9px;
 }
 
@@ -82,7 +82,7 @@
   gap: 7px;
   padding: 0 8px;
   margin: 0 13px 9px;
-  border: 1px solid #d3d3d3;
+  border: 1px solid var(--ad-line);
   border-radius: 4px;
 }
 
@@ -91,7 +91,7 @@
   height: 13px;
   flex: 0 0 auto;
   fill: none;
-  stroke: #777;
+  stroke: var(--ad-muted);
   stroke-linecap: round;
   stroke-width: 1.4;
 }
@@ -100,7 +100,7 @@
   width: 100%;
   min-width: 0;
   padding: 0;
-  color: #333;
+  color: var(--ad-ink);
   background: none;
   border: 0;
   outline: 0;
@@ -108,12 +108,12 @@
 }
 
 :where(.admin-page) .search-field input::placeholder {
-  color: #888;
+  color: var(--ad-muted);
 }
 
 :where(.admin-page) .search-field:focus-within {
-  border-color: #777;
-  outline: 2px solid #e6e6e6;
+  border-color: var(--ad-primary);
+  outline: 2px solid var(--ad-line-soft);
 }
 
 :where(.admin-page) .filter-tabs {
@@ -122,34 +122,34 @@
   align-items: center;
   gap: 5px;
   padding: 0 13px 8px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--ad-line);
 }
 
 :where(.admin-page) .filter-chip {
   min-height: 23px;
   flex: 0 0 auto;
   padding: 0 7px;
-  color: #444;
-  background: #fff;
-  border: 1px solid #d0d0d0;
-  border-radius: 3px;
+  color: var(--ad-ink);
+  background: var(--ad-surface);
+  border: 1px solid var(--ad-line);
+  border-radius: 4px;
   font-size: 9px;
 }
 
 :where(.admin-page) .status-filter select {
   height: 23px;
   padding: 0 19px 0 7px;
-  color: #444;
-  background-color: #fff;
-  border: 1px solid #d0d0d0;
-  border-radius: 3px;
+  color: var(--ad-ink);
+  background-color: var(--ad-surface);
+  border: 1px solid var(--ad-line);
+  border-radius: 4px;
   font-size: 9px;
 }
 
 :where(.admin-page) .filter-chip.active {
   color: #fff;
-  background: #333;
-  border-color: #333;
+  background: var(--ad-primary);
+  border-color: var(--ad-primary);
 }
 
 :where(.admin-page) .booking-rows {
@@ -163,20 +163,20 @@
   width: 100%;
   min-height: 73px;
   padding: 10px 13px 9px;
-  color: #333;
-  background: #fff;
+  color: var(--ad-ink);
+  background: var(--ad-surface);
   border: 0;
-  border-bottom: 1px solid #e4e4e4;
+  border-bottom: 1px solid var(--ad-line-soft);
   text-align: left;
 }
 
 :where(.admin-page) .booking-row:hover {
-  background: #fafafa;
+  background: var(--ad-canvas);
 }
 
 :where(.admin-page) .booking-row.selected {
-  background: #e9e9e9;
-  box-shadow: inset 2px 0 #333;
+  background: var(--ad-primary-soft);
+  box-shadow: inset 2px 0 var(--ad-primary);
 }
 
 :where(.admin-page) .booking-row-top {
@@ -196,10 +196,10 @@
   min-height: 19px;
   align-items: center;
   padding: 2px 6px;
-  color: #454545;
-  background: #f1f1f1;
-  border: 1px solid #d1d1d1;
-  border-radius: 3px;
+  color: var(--ad-ink);
+  background: var(--ad-canvas);
+  border: 1px solid var(--ad-line);
+  border-radius: 4px;
   font-size: 8px;
   font-weight: 600;
   line-height: 1.1;
@@ -211,7 +211,7 @@
 }
 
 :where(.admin-page) .booking-status.ready-for-pickup {
-  background: #f2f2f2;
+  background: var(--ad-canvas);
 }
 
 :where(.admin-page) .booking-status.disapproved {
@@ -222,20 +222,20 @@
 :where(.admin-page) .booking-row-pickup {
   display: block;
   margin-top: 7px;
-  color: #777;
+  color: var(--ad-muted);
   font-size: 9px;
 }
 
 :where(.admin-page) .booking-row-pickup {
   margin-top: 5px;
-  color: #555;
+  color: var(--ad-muted);
 }
 
 :where(.admin-page) .selected-indicator {
   position: absolute;
   right: 12px;
   bottom: 11px;
-  color: #333;
+  color: var(--ad-ink);
   font-size: 8px;
 }
 
@@ -245,8 +245,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 12px;
-  color: #777;
-  border-top: 1px solid #e3e3e3;
+  color: var(--ad-muted);
+  border-top: 1px solid var(--ad-line-soft);
   font-size: 9px;
 }
 
@@ -262,10 +262,10 @@
   width: 24px;
   height: 24px;
   place-items: center;
-  color: #444;
-  background: #fff;
-  border: 1px solid #d4d4d4;
-  border-radius: 3px;
+  color: var(--ad-ink);
+  background: var(--ad-surface);
+  border: 1px solid var(--ad-line);
+  border-radius: 4px;
   font-size: 12px;
 }
 
@@ -274,13 +274,13 @@
 }
 
 :where(.admin-page) .list-pagination button:disabled {
-  color: #aaa;
+  color: var(--ad-muted);
   cursor: default;
 }
 
 :where(.admin-page) .no-bookings {
   padding: 30px 12px;
-  color: #777;
+  color: var(--ad-muted);
   font-size: 10px;
   text-align: center;
 }
@@ -299,7 +299,7 @@
   justify-content: space-between;
   gap: 15px;
   padding: 9px 16px;
-  border-bottom: 1px solid #e1e1e1;
+  border-bottom: 1px solid var(--ad-line-soft);
 }
 
 :where(.admin-page) .request-heading h2 {
@@ -310,7 +310,7 @@
 
 :where(.admin-page) .request-heading p {
   margin: 4px 0 0;
-  color: #777;
+  color: var(--ad-muted);
   font-size: 9px;
 }
 
@@ -318,7 +318,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #777;
+  color: var(--ad-muted);
   font-size: 9px;
 }
 
@@ -340,13 +340,13 @@
 
 :where(.admin-page) .student-details span {
   margin-bottom: 4px;
-  color: #777;
+  color: var(--ad-muted);
   font-size: 8px;
 }
 
 :where(.admin-page) .student-details strong {
   overflow: hidden;
-  color: #333;
+  color: var(--ad-ink);
   font-size: 9px;
   font-weight: 650;
   text-overflow: ellipsis;
@@ -359,8 +359,8 @@
   gap: 6px;
   padding: 5px 8px;
   margin: 0 16px;
-  color: #777;
-  background: #f3f3f3;
+  color: var(--ad-muted);
+  background: var(--ad-canvas);
   font-size: 8px;
   line-height: 1.4;
 }
@@ -389,7 +389,7 @@
 }
 
 :where(.admin-page) .equipment-section-heading > span {
-  color: #777;
+  color: var(--ad-muted);
   font-size: 8px;
   text-align: right;
 }
@@ -397,8 +397,8 @@
 :where(.admin-page) .equipment-table-wrap {
   width: 100%;
   overflow-x: auto;
-  border: 1px solid #d9d9d9;
-  border-radius: 2px;
+  border: 1px solid var(--ad-line);
+  border-radius: 6px;
 }
 
 :where(.admin-page) .equipment-table {
@@ -410,9 +410,9 @@
 
 :where(.admin-page) .equipment-table th {
   padding: 6px 7px;
-  color: #333;
-  background: #eaeaea;
-  border-bottom: 1px solid #d1d1d1;
+  color: var(--ad-ink);
+  background: var(--ad-canvas);
+  border-bottom: 1px solid var(--ad-line);
   font-size: 8px;
   font-weight: 650;
   text-align: left;
@@ -422,8 +422,8 @@
 :where(.admin-page) .equipment-table td {
   height: 29px;
   padding: 3px 7px;
-  color: #4d4d4d;
-  border-bottom: 1px solid #e5e5e5;
+  color: var(--ad-ink);
+  border-bottom: 1px solid var(--ad-line-soft);
   white-space: nowrap;
 }
 
@@ -432,44 +432,44 @@
 }
 
 :where(.admin-page) .equipment-table td strong {
-  color: #3b3b3b;
+  color: var(--ad-ink);
   font-weight: 650;
 }
 
 :where(.admin-page) .equipment-table .out-of-stock-row {
-  background: #f3f3f3;
+  background: var(--ad-canvas);
 }
 
 :where(.admin-page) .equipment-table td .zero-stock {
-  color: #333;
+  color: var(--ad-ink);
 }
 
 :where(.admin-page) .allocation-cell {
   display: flex;
   align-items: center;
   gap: 5px;
-  color: #777;
+  color: var(--ad-muted);
 }
 
 :where(.admin-page) .allocation-cell input {
   width: 50px;
   height: 22px;
   padding: 2px 5px;
-  color: #333;
-  background: #fff;
-  border: 1px solid #d1d1d1;
-  border-radius: 3px;
+  color: var(--ad-ink);
+  background: var(--ad-surface);
+  border: 1px solid var(--ad-line);
+  border-radius: 4px;
   font-size: 9px;
 }
 
 :where(.admin-page) .allocation-cell input:disabled {
-  color: #777;
-  background: #f3f3f3;
+  color: var(--ad-muted);
+  background: var(--ad-canvas);
 }
 
 :where(.admin-page) .allocation-cell input:focus-visible,
 :where(.admin-page) .decision-fields textarea:focus-visible {
-  outline: 2px solid #bbb;
+  outline: 2px solid var(--ad-line);
   outline-offset: 1px;
 }
 
@@ -481,12 +481,12 @@
 }
 
 :where(.admin-page) .availability.available {
-  color: #3d3d3d;
+  color: var(--ad-ink);
 }
 
 :where(.admin-page) .availability.unavailable,
 :where(.admin-page) .availability.rationed {
-  color: #555;
+  color: var(--ad-muted);
 }
 
 :where(.admin-page) .allocation-footnote {
@@ -494,7 +494,7 @@
   align-items: center;
   gap: 5px;
   margin: 5px 0 0;
-  color: #555;
+  color: var(--ad-muted);
   font-size: 8px;
 }
 
@@ -504,13 +504,13 @@
   gap: 14px;
   padding: 11px 16px 7px;
   margin-top: 4px;
-  border-bottom: 1px solid #dedede;
+  border-bottom: 1px solid var(--ad-line-soft);
 }
 
 :where(.admin-page) .decision-fields label > span {
   display: block;
   margin-bottom: 5px;
-  color: #444;
+  color: var(--ad-ink);
   font-size: 9px;
   font-weight: 650;
 }
@@ -521,27 +521,27 @@
   min-height: 45px;
   resize: vertical;
   padding: 7px;
-  color: #444;
-  background: #fff;
-  border: 1px solid #d1d1d1;
-  border-radius: 3px;
+  color: var(--ad-ink);
+  background: var(--ad-surface);
+  border: 1px solid var(--ad-line);
+  border-radius: 4px;
   font-size: 9px;
   line-height: 1.4;
 }
 
 :where(.admin-page) .decision-fields textarea:disabled {
-  color: #777;
-  background: #f7f7f7;
+  color: var(--ad-muted);
+  background: var(--ad-canvas);
 }
 
 :where(.admin-page) .decision-fields textarea::placeholder {
-  color: #888;
+  color: var(--ad-muted);
 }
 
 :where(.admin-page) .decision-fields small {
   display: block;
   margin-top: 4px;
-  color: #888;
+  color: var(--ad-muted);
   font-size: 8px;
 }
 
@@ -550,7 +550,7 @@
   align-items: center;
   gap: 6px;
   padding: 8px 16px 10px;
-  color: #444;
+  color: var(--ad-ink);
   font-size: 9px;
 }
 
@@ -558,21 +558,21 @@
   width: 12px;
   height: 12px;
   margin: 0;
-  accent-color: #444;
+  accent-color: var(--ad-primary);
 }
 
 :where(.admin-page) .email-option small {
-  color: #888;
+  color: var(--ad-muted);
   font-size: 8px;
 }
 
 :where(.admin-page) .decision-notice {
   padding: 7px 10px;
   margin: 0 16px 9px;
-  color: #435648;
-  background: #f1f5f1;
-  border: 1px solid #dde7de;
-  border-radius: 3px;
+  color: var(--ad-primary);
+  background: var(--ad-primary-soft);
+  border: 1px solid var(--ad-primary-line);
+  border-radius: 4px;
   font-size: 9px;
 }
 
@@ -584,8 +584,8 @@
   gap: 15px;
   padding: 9px 16px;
   margin-top: auto;
-  background: #fafafa;
-  border-top: 1px solid #dedede;
+  background: var(--ad-canvas);
+  border-top: 1px solid var(--ad-line-soft);
 }
 
 :where(.admin-page) .next-step,
@@ -596,7 +596,7 @@
 
 :where(.admin-page) .next-step > span,
 :where(.admin-page) .decision-actions > span {
-  color: #888;
+  color: var(--ad-muted);
   font-size: 8px;
 }
 
@@ -616,16 +616,16 @@
   justify-content: center;
   gap: 6px;
   padding: 0 9px;
-  border: 1px solid #d1d1d1;
-  border-radius: 3px;
+  border: 1px solid var(--ad-line);
+  border-radius: 4px;
   font-size: 9px;
   font-weight: 650;
   white-space: nowrap;
 }
 
 :where(.admin-page) .prepare-button {
-  color: #999;
-  background: #f3f3f3;
+  color: var(--ad-muted);
+  background: var(--ad-canvas);
 }
 
 :where(.admin-page) .prepare-button:disabled {
@@ -633,7 +633,7 @@
 }
 
 :where(.admin-page) .next-step small {
-  color: #777;
+  color: var(--ad-muted);
   font-size: 8px;
 }
 
@@ -642,29 +642,29 @@
 }
 
 :where(.admin-page) .disapprove-button {
-  color: #444;
-  background: #fff;
+  color: var(--ad-ink);
+  background: var(--ad-surface);
 }
 
 :where(.admin-page) .approve-button {
   color: #fff;
-  background: #333;
-  border-color: #333;
+  background: var(--ad-primary);
+  border-color: var(--ad-primary);
 }
 
 :where(.admin-page) .approve-button:hover:not(:disabled) {
-  background: #171717;
+  background: var(--ad-primary);
 }
 
 :where(.admin-page) .disapprove-button:hover:not(:disabled) {
-  background: #f3f3f3;
+  background: var(--ad-canvas);
 }
 
 :where(.admin-page) .approve-button:disabled,
 :where(.admin-page) .disapprove-button:disabled {
-  color: #999;
-  background: #eee;
-  border-color: #ddd;
+  color: var(--ad-muted);
+  background: var(--ad-canvas);
+  border-color: var(--ad-line);
   cursor: not-allowed;
 }
 
@@ -680,7 +680,7 @@
 }
 
 :where(.admin-page) .no-selection p {
-  color: #777;
+  color: var(--ad-muted);
   font-size: 10px;
 }
 
@@ -857,14 +857,28 @@
   }
 }
 
+/* Shared palette with student inventory and booking (green family, OKLCH hue ~150). */
 .admin-page {
+  --ad-primary: #2f6b47;
+  --ad-primary-hover: #275a3c;
+  --ad-primary-soft: #edf3ef;
+  --ad-primary-line: #c9dccf;
+  --ad-canvas: #f5f6f5;
+  --ad-surface: #fff;
+  --ad-line: #d5dad7;
+  --ad-line-soft: #e7ebe8;
+  --ad-ink: #2b312e;
+  --ad-muted: #5f6763;
+  --ad-danger: #a33a3a;
+  --ad-danger-soft: #f8eeee;
+
   width: 100%;
   zoom: 1.5;
 }
 
 :where(.admin-page) .equipment-app {
-  color: #475467;
-  background: #fff;
+  color: var(--ad-ink);
+  background: var(--ad-canvas);
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -881,79 +895,80 @@
 }
 
 :where(.admin-page) .page-title-row h1 {
-  color: #111;
+  color: var(--ad-ink);
   font-size: 20px;
-  font-weight: 500;
-  letter-spacing: 0;
+  font-weight: 650;
+  letter-spacing: -0.3px;
 }
 
 :where(.admin-page) .page-title-row p {
   margin-top: 2px;
-  color: #444;
+  color: var(--ad-muted);
   font-size: 11px;
-}
-
-:where(.admin-page) .booking-list-panel,
-:where(.admin-page) .review-panel {
-  border-color: #999;
-  border-radius: 0;
 }
 
 :where(.admin-page) .list-panel-heading h2,
 :where(.admin-page) .request-heading h2,
 :where(.admin-page) .equipment-section-heading h3 {
-  color: #111;
-  font-weight: 500;
-}
-
-:where(.admin-page) .filter-tabs {
-  border-bottom-color: #888;
+  color: var(--ad-ink);
+  font-weight: 650;
 }
 
 :where(.admin-page) .filter-chip.active,
 :where(.admin-page) .approve-button {
   color: #fff;
-  background: #205b32;
-  border-color: #205b32;
+  background: var(--ad-primary);
+  border-color: var(--ad-primary);
 }
 
 :where(.admin-page) .filter-chip.active:hover,
 :where(.admin-page) .approve-button:hover:not(:disabled) {
-  background: #174525;
+  background: var(--ad-primary-hover);
+}
+
+:where(.admin-page) .filter-chip:hover:not(.active),
+:where(.admin-page) .disapprove-button:hover:not(:disabled) {
+  background: var(--ad-primary-soft);
+}
+
+:where(.admin-page) .search-field:focus-within,
+:where(.admin-page) .allocation-cell input:focus-visible,
+:where(.admin-page) .decision-fields textarea:focus-visible {
+  border-color: var(--ad-primary);
+  outline: 2px solid var(--ad-primary-soft);
+}
+
+:where(.admin-page) .booking-row:hover {
+  background: var(--ad-canvas);
 }
 
 :where(.admin-page) .booking-row.selected {
-  background: #edf7f2;
-  box-shadow: inset 3px 0 #205b32;
+  background: var(--ad-primary-soft);
+  box-shadow: inset 3px 0 var(--ad-primary);
 }
 
 :where(.admin-page) .booking-status.approved,
 :where(.admin-page) .availability.available {
   color: #fff;
-  background: #205b32;
-  border-color: #205b32;
+  background: var(--ad-primary);
+  border-color: var(--ad-primary);
 }
 
 :where(.admin-page) .booking-status.ready-for-pickup {
-  color: #175c49;
-  background: #edf7f2;
-  border-color: #c9e2d4;
+  color: var(--ad-primary);
+  background: var(--ad-primary-soft);
+  border-color: var(--ad-primary-line);
 }
 
 :where(.admin-page) .booking-status.disapproved {
-  color: #555;
-  background: #eee;
-  border-color: #ddd;
-}
-
-:where(.admin-page) .equipment-table-wrap {
-  border-color: #888;
-  border-radius: 0;
+  color: var(--ad-danger);
+  background: var(--ad-danger-soft);
+  border-color: #e6caca;
 }
 
 :where(.admin-page) .equipment-table th {
-  background: #f3f3f3;
-  border: 1px solid #999;
+  color: var(--ad-muted);
+  background: var(--ad-canvas);
   font-size: 11px;
   font-weight: 600;
 }
@@ -961,19 +976,14 @@
 :where(.admin-page) .equipment-table td {
   height: 34px;
   padding: 4px 8px;
-  border: 1px solid #999;
   font-size: 11px;
-}
-
-:where(.admin-page) .equipment-table .out-of-stock-row {
-  background: #f7f7f7;
 }
 
 :where(.admin-page) .availability.available {
   padding: 3px 7px;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 :where(.admin-page) .review-footer {
-  background: #f7f7f7;
+  background: var(--ad-canvas);
 }
