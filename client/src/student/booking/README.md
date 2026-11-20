@@ -64,8 +64,12 @@ Props:
   `category` (`equipment` or `chemical`), `unit`, numeric `available`, and optional
   `quantity`. Preserve the mounted form while editing the selection.
 - `inventory`: items for the local add-item dialog, using the same format.
-- `borrower`: authenticated `{ studentId }`; supplied fields are read-only.
-  Mount only after the profile has loaded.
+- `borrower`: authenticated `{ studentId }` from the profile; the field is always
+  read-only and is not sent with the request. Mount only after the profile has loaded.
+- `onDraftChange(items)`: called after every draft change, and with `[]` once a
+  request is saved. The student route uses it to keep the inventory page's
+  booking cart (`../inventoryCart.js`) in step with this page.
+- `draftNote`: message shown when the saved cart cannot be read or written.
 - `submitRequest(payload)`: resolves after persistence to
   `{ reference: string, status: 'Pending' }`; rejects with an Error on failure.
 - `onChooseItems(currentItems)`: optional callback for Ethan's selection UI.
@@ -82,12 +86,11 @@ Proposed payload, pending agreement with Marc and JD:
 
 ```json
 {
-  "borrower": { "studentId": "2026-00001" },
   "subject": "Chemistry 16",
   "purpose": "Laboratory experiment",
   "borrowDate": "2026-11-01",
   "returnDate": "2026-11-02",
-  "items": [{ "inventoryId": "inventory-id", "quantity": 2, "unit": "pcs" }]
+  "items": [{ "inventoryId": "inventory-id", "quantity": 200 }]
 }
 ```
 
@@ -96,9 +99,17 @@ canonical units and current stock, save items atomically and assign Pending.
 The client never changes stock or implements reservations. Preventing duplicates
 across retries still requires server-side idempotency.
 
+Quantities are integer hundredths, as stored in `request_items` (2 pcs = 200,
+25.5 mL = 2550). Units are not sent; the server uses the item's own unit.
+
+The draft starts from the inventory page's booking cart. When inventory loads,
+each draft item takes the current name, unit and stock; items that are no longer
+listed are removed with a message. Stock shown here is advisory until the server
+checks it. Nothing is saved to the database while editing.
+
 Current validation assumptions: all fields required, borrowing today or later,
-return on/after borrowing, positive whole equipment quantities, positive decimal
-chemical quantities, and quantity no greater than displayed stock. Units stay
+return on/after borrowing, positive whole quantities for `pcs`, at most two
+decimal places for measured units, and quantity no greater than displayed stock. Units stay
 tied to inventory. Confirm precision, dates/timezone, student-ID rules and
 pending-stock behavior with the team before live integration.
 

@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useAuth } from '../../auth/AuthContext.js'
 
 import { getItems } from '../../data/items.js'
 
 import { toBookingItem } from '../../data/inventoryClient.js'
+
+import { readInventoryCart, writeInventoryCart } from '../inventoryCart.js'
 
 import BookingPage from './BookingPage.jsx'
 
@@ -13,6 +15,26 @@ export default function StudentBookingRoute() {
 
     const [inventory, setInventory] = useState([])
     const [inventoryNote, setInventoryNote] = useState('Loading inventory…')
+
+    // The inventory page's booking cart is the draft; it is only stored in this browser until a request is saved.
+    const [cart] = useState(() => {
+        try {
+            return { items: readInventoryCart(), error: '' }
+        } catch (error) {
+            return { items: [], error: error.message }
+        }
+    })
+    const [cartError, setCartError] = useState(cart.error)
+
+    const saveDraft = useCallback((items) => {
+        // An unreadable cart is left for the inventory page's message instead of being overwritten.
+        if (cart.error) return
+        try {
+            writeInventoryCart(items)
+        } catch (error) {
+            setCartError(error.message)
+        }
+    }, [cart.error])
 
     useEffect(() => {
         let active = true
@@ -37,6 +59,9 @@ export default function StudentBookingRoute() {
         <div className="booking-app student-booking-page">
             <BookingPage
                 borrower={{ studentId: profile.id_number }}
+                initialItems={cart.items}
+                onDraftChange={saveDraft}
+                draftNote={cartError}
                 inventory={inventory}
                 inventoryNote={inventoryNote}
             />
