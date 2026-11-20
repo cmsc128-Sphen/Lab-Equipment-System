@@ -4,12 +4,12 @@ const app = require('../app');
 const exportedApp = require('../index');
 
 test('both server entry points share the app without opening a listener on import', () => {
-    // Importing the database entry point must keep health-route tests independent of credentials.
+    // Both imports expose the same app without starting the service.
     assert.equal(exportedApp, app);
 });
 
-test('merged HTTP scaffold preserves both health paths and rejects unfinished API routes', async (context) => {
-    // Use a temporary local port; these requests never contact Firebase.
+test('server exposes health endpoints and rejects unimplemented API routes', async (context) => {
+    // Use a temporary local port; no database or credentials are required.
     const server = app.listen(0, '127.0.0.1');
     await new Promise((resolve, reject) => {
         server.once('listening', resolve);
@@ -19,18 +19,18 @@ test('merged HTTP scaffold preserves both health paths and rejects unfinished AP
 
     try {
         for (const path of ['/health', '/api/health']) {
-            await context.test(`${path} reports HTTP availability without claiming database connectivity`, async () => {
+            await context.test(`${path} reports HTTP availability`, async () => {
                 const response = await fetch(`${baseUrl}${path}`);
                 const body = await response.json();
 
                 assert.equal(response.status, 200);
                 assert.equal(body.status, 'ok');
-                assert.equal(body.databaseConnectivity, 'not_checked');
+                assert.equal(body.service, 'lab-equipment-api');
             });
         }
 
-        await context.test('unfinished item and booking endpoints return explicit errors', async () => {
-            // A prototype route must never pretend that a request was saved.
+        await context.test('unused API routes return explicit errors', async () => {
+            // The scaffold must not pretend that inventory or booking features exist.
             for (const path of ['/api/items', '/api/admin/bookings']) {
                 const response = await fetch(`${baseUrl}${path}`);
                 const body = await response.json();

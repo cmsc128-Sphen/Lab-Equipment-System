@@ -9,94 +9,69 @@
 
 ## Figma Design
 
-link:`https://www.figma.com/design/ZDwpMP3tRk4zyvx14o6V6f/142-Lab-Final-Project?node-id=15-22&t=2jdRe1zoi1zIuKeq-1`
+[Project design](https://www.figma.com/design/ZDwpMP3tRk4zyvx14o6V6f/142-Lab-Final-Project?node-id=15-22)
+
+## Current status
+
+The React frontend contains student inventory and booking screens plus a staff booking-review prototype. These screens use sample data; changes are not persisted and authentication is not implemented.
+
+The backend has been reset to a minimal Express server. It exposes only `GET /health` and `GET /api/health`; all other routes return 404. There is no database connection, authentication, inventory API, booking API or notification worker. The previous database migrations, seed data and unused backend implementation have been removed.
+
+Supabase remains the planned database. Its schema and integration will be rebuilt as features are implemented.
 
 ## Tech Stack
 
-| Layer | Language |
+| Layer | Technology |
 | --- | --- |
-| Frontend | React |
-| Backend | Node.js & Express.js |
-| Database | Firebase |
-
-## Sprint 2 prototype
-
-The current client prototype focuses on Marc's lab-staff booking-review slice:
-searching and filtering sample bookings, checking stock, editing allocations,
-adding staff notes, and recording an approve/disapprove decision in React state.
-The review layout follows the supplied booking-review wireframe.
-
-The prototype does **not** persist changes, connect to Firebase, authenticate
-staff, or send email. The Express server currently provides a health check
-only. Proposed booking-review endpoints and the deferred parts of this slice
-are documented in [`server/API_CONTRACT.md`](./server/API_CONTRACT.md).
-
-To run the client, follow the client setup below and use the booking list on the
-left to select a sample request. Changes reset on refresh. The
-“Mark ready for pickup” action is intentionally disabled; pickup preparation,
-return verification, and real notifications are not part of this prototype.
+| Frontend | React, Vite, React Router |
+| Backend | Node.js, Express |
+| Database | Supabase (planned; not configured) |
 
 ## Requirements
 
 - Git
-- npm
-- Node.js (20.x+)
-- A Firebase database
+- Node.js 22.12+ and npm
 
-## Installation & Initialization
+## Run the frontend
 
-1. Clone the repo
+From `client/`, install dependencies and copy `.env.example` to `.env`. Keep `USE_MOCK_DATA=true` to use the sample inventory and demo booking submission.
 
 ```bash
-git clone https://github.com/Yomaruichi/Lab-Equipment-System.git
-cd Lab-Equipment-System
-```
-
-2. Create `.env` file in project root
-
-```bash
-VITE_FIREBASE_API_KEY=
-VITE_FIREBASE_AUTH_DOMAIN=
-VITE_FIREBASE_PROJECT_ID=
-VITE_FIREBASE_STORAGE_BUCKET=
-VITE_FIREBASE_MESSAGING_SENDER_ID=
-VITE_FIREBASE_APP_ID=
-VITE_FIREBASE_MEASUREMENT_ID=
-```
-
-3. Set up the client
-
-```bash
-cd client
 npm install
-```
-
-4. Run the client
-
-If you're in the root folder
-
-```bash
-cd client
 npm run dev
 ```
 
-else
+Open `http://localhost:5173`. Student pages and the admin review screen are available through the page navigation. Demo changes reset on refresh; the frontend is not connected to a backend data service.
+
+## Run the backend
+
+From `server/`:
 
 ```bash
+npm install
 npm run dev
 ```
 
-default address: http://localhost:5173/
+Use `npm start` to run without watch mode. Optional settings in `server/.env` can be copied from `server/.env.example`:
 
-5. Set up the server
-
-```bash
-cd ../server
-npm install
+```dotenv
+PORT=3000
+CLIENT_ORIGINS=http://localhost:5173
 ```
 
-6. Run the server
+The server starts without database credentials. Its health endpoints report HTTP availability only.
+
+## Checks
+
+Backend health and unimplemented-route checks, from `server/`:
 
 ```bash
-npm run start
+npm test
+```
+
+Frontend build and booking checks, from `client/`:
+
+```bash
+npm run build
+node --test src/student/booking/booking.test.js
 ```
