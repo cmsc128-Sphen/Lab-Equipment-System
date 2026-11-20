@@ -1,8 +1,14 @@
-import { useMemo, useState } from 'react'
-import { initialBookings } from './demoData.js'
+import { useEffect, useMemo, useState } from 'react'
+
+import { getIdToken } from '../auth/getIdToken.js'
+
+import { bookingStatuses, createAdminBookingClient } from '../services/adminBookings.js'
+
 import './admin.css'
 
-const statusFilters = ['Approved', 'Ready for pickup', 'Disapproved']
+const statusFilters = Object.values(bookingStatuses).filter((status) => status !== 'Pending')
+
+const bookingClient = createAdminBookingClient({ getAccessToken: getIdToken })
 
 function BookingStatus({ status }) {
   const className = status.toLowerCase().replaceAll(' ', '-')
@@ -10,11 +16,57 @@ function BookingStatus({ status }) {
 }
 
 function AdminDashboard() {
-  const [bookings, setBookings] = useState(initialBookings)
-  const [selectedId, setSelectedId] = useState(initialBookings[0].id)
+  const [bookings, setBookings] = useState([])
+  const [selectedId, setSelectedId] = useState(null)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState('All')
   const [notice, setNotice] = useState('')
+
+  const [loading, setLoading] = useState(true)
+
+  const [saving, setSaving] = useState(false)
+
+  const [loadError, setLoadError] = useState('')
+
+  const [needsRefresh, setNeedsRefresh] = useState(false)
+
+  const [refreshVersion, setRefreshVersion] = useState(0)
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    bookingClient.load({ signal: controller.signal })
+      .then((rows) => {
+        if (controller.signal.aborted) return
+
+        setBookings(rows)
+
+        setSelectedId((current) => rows.some((row) => row.id === current) ? current : (rows[0]?.id ?? null))
+
+        setNeedsRefresh(false)
+
+        setLoading(false)
+      })
+      .catch((error) => {
+        if (controller.signal.aborted) return
+
+        setBookings([])
+
+        setLoadError(error.message)
+
+        setLoading(false)
+      })
+
+    return () => controller.abort()
+  }, [refreshVersion])
+
+  function refreshBookings() {
+    setLoading(true)
+
+    setLoadError('')
+
+    setRefreshVersion((version) => version + 1)
+  }
 
   const selectedBooking = bookings.find((booking) => booking.id === selectedId)
   const pendingCount = bookings.filter((booking) => booking.status === 'Pending').length
@@ -25,7 +77,7 @@ function AdminDashboard() {
       const matchesFilter = filter === 'All' || booking.status === filter
       const matchesQuery =
         !normalizedQuery ||
-        [booking.studentName, booking.studentNumber, booking.id].some((value) =>
+        [booking.studentName, booking.studentNumber, booking.requestNumber].some((value) =>
           value.toLowerCase().includes(normalizedQuery),
         )
 
@@ -45,7 +97,7 @@ function AdminDashboard() {
     const quantity = Math.min(
       item.requested,
       item.stock,
-      Math.floor(Math.max(0, Number(rawValue) || 0)),
+      Math.round(Math.max(0, Number(rawValue) || 0) * (item.unit === 'pcs' ? 1 : 100)) / (item.unit === 'pcs' ? 1 : 100),
     )
 
     updateSelectedBooking((booking) => ({
@@ -56,33 +108,38 @@ function AdminDashboard() {
     }))
   }
 
-  function approveBooking() {
-    const anyAllocation = selectedBooking.items.some((item) => item.allocated > 0)
-    if (!anyAllocation) {
+  async function saveDecision(action) {
+    if (saving || loading || needsRefresh || !selectedBooking) return
+
+    if (action === 'approved' && !selectedBooking.items.some((item) => item.allocated > 0)) {
       setNotice('Allocate at least one available item before approving this request.')
+
       return
     }
 
-    updateSelectedBooking((booking) => ({ ...booking, status: 'Approved' }))
-    setNotice(
-      selectedBooking.emailDecision
-        ? `Approval recorded for ${selectedBooking.id}. Email was not sent.`
-        : `Approval recorded for ${selectedBooking.id}.`,
-    )
-  }
-
-  function disapproveBooking() {
-    if (!selectedBooking.denialReason.trim()) {
+    if (action === 'denied' && !selectedBooking.denialReason.trim()) {
       setNotice('Enter a reason for disapproval before submitting your decision.')
+
       return
     }
 
-    updateSelectedBooking((booking) => ({ ...booking, status: 'Disapproved' }))
-    setNotice(
-      selectedBooking.emailDecision
-        ? `Disapproval recorded for ${selectedBooking.id}. Email was not sent.`
-        : `Disapproval recorded for ${selectedBooking.id}.`,
-    )
+    setSaving(true)
+
+    setNotice('')
+
+    try {
+      await bookingClient.decide(selectedBooking, action)
+
+      setNotice(`${selectedBooking.requestNumber}: ${bookingStatuses[action]}. Saved to the database. Email was not sent.`)
+
+      refreshBookings()
+    } catch (error) {
+      setNotice(error.message)
+
+      setNeedsRefresh(true)
+    } finally {
+      setSaving(false)
+    }
   }
 
   function selectBooking(booking) {
@@ -98,7 +155,15 @@ function AdminDashboard() {
             <h1>Booking review</h1>
             <p>Review student request slips, check stock, and communicate your decision.</p>
           </div>
+          <button className="prepare-button" disabled={loading || saving} onClick={refreshBookings} type="button">
+            {loading ? 'Loading...' : 'Refresh bookings'}
+          </button>
         </section>
+
+        {loadError && <p className="decision-notice" role="alert">{loadError}</p>}
+        {notice && <p className="decision-notice" role="status">{notice}</p>}
+        {saving && <p className="decision-notice" role="status">Saving decision...</p>}
+        {needsRefresh && <p role="alert">Refresh bookings before submitting another decision.</p>}
 
         <section aria-label="Booking review workspace" className="booking-workspace">
           <aside aria-label="Student bookings" className="booking-list-panel">
@@ -150,6 +215,7 @@ function AdminDashboard() {
                 <button
                   aria-current={selectedId === booking.id ? 'true' : undefined}
                   className={`booking-row ${selectedId === booking.id ? 'selected' : ''}`}
+                  disabled={saving || loading}
                   key={booking.id}
                   onClick={() => selectBooking(booking)}
                   type="button"
@@ -164,7 +230,7 @@ function AdminDashboard() {
                 </button>
               ))}
               {visibleBookings.length === 0 && (
-                <div className="no-bookings">No bookings match this search.</div>
+                <div className="no-bookings">{loading ? 'Loading bookings...' : loadError ? 'Bookings could not be loaded.' : bookings.length ? 'No bookings match this search.' : 'No bookings have been submitted yet.'}</div>
               )}
             </div>
 
@@ -178,11 +244,11 @@ function AdminDashboard() {
             <section aria-label="Selected booking details" className="review-panel">
               <div className="request-heading">
                 <div>
-                  <h2>Request {selectedBooking.id}</h2>
+                  <h2>Request {selectedBooking.requestNumber}</h2>
                   <p>{selectedBooking.studentName} · Digital borrowing request slip</p>
                 </div>
                 <div className="review-state">
-                  <span>{selectedBooking.status === 'Pending' ? 'Awaiting staff decision' : `Staff decision recorded`}</span>
+                  <span>{selectedBooking.status === 'Pending' ? 'Awaiting staff decision' : 'Saved request status'}</span>
                   <BookingStatus status={selectedBooking.status} />
                 </div>
               </div>
@@ -200,13 +266,13 @@ function AdminDashboard() {
 
               <div className="policy-note">
                 <span aria-hidden="true">ⓘ</span>
-                Advance notice met (at least 1 day). Undergraduate equipment must be returned by end of day; chemicals and disposables are not returnable.
+                Check the requested dates and return policy before approving. Stock is reserved when approval is saved.
               </div>
 
               <div className="equipment-section">
                 <div className="equipment-section-heading">
                   <h3>Requested equipment &amp; materials</h3>
-                  <span>{selectedBooking.items.length} line items · Stock checked 15 Oct, 10:20 AM</span>
+                  <span>{selectedBooking.items.length} line items · Current available stock</span>
                 </div>
                 <div className="equipment-table-wrap">
                   <table className="equipment-table">
@@ -215,7 +281,7 @@ function AdminDashboard() {
                         <th>Item</th>
                         <th>Category</th>
                         <th>Requested qty.</th>
-                        <th>Stock on hand</th>
+                        <th>Available stock</th>
                         <th>Approve / allocate qty.</th>
                         <th>Availability</th>
                       </tr>
@@ -224,10 +290,10 @@ function AdminDashboard() {
                       {selectedBooking.items.map((item, index) => {
                         const outOfStock = item.stock === 0
                         const rationed = item.allocated < item.requested && !outOfStock
-                        const editable = selectedBooking.status === 'Pending'
+                        const editable = selectedBooking.status === 'Pending' && !saving && !loading && !needsRefresh
 
                         return (
-                          <tr className={outOfStock ? 'out-of-stock-row' : ''} key={`${item.name}-${index}`}>
+                          <tr className={outOfStock && selectedBooking.status === 'Pending' ? 'out-of-stock-row' : ''} key={item.id}>
                             <td><strong>{item.name}</strong></td>
                             <td>{item.category}</td>
                             <td>{item.requested} {item.unit}</td>
@@ -239,6 +305,7 @@ function AdminDashboard() {
                                   aria-label={`Approve quantity of ${item.name}`}
                                   disabled={!editable}
                                   max={Math.min(item.stock, item.requested)}
+                                  step={item.unit === 'pcs' ? 1 : 0.01}
                                   min="0"
                                   onChange={(event) => updateAllocation(index, event.target.value)}
                                   type="number"
@@ -248,7 +315,11 @@ function AdminDashboard() {
                               </label>
                             </td>
                             <td>
-                              {outOfStock ? (
+                              {selectedBooking.status !== 'Pending' ? (
+                                <span className={`availability ${item.allocated > 0 ? 'available' : 'unavailable'}`}>
+                                  {item.allocated > 0 ? `Approved: ${item.allocated} ${item.unit}` : 'Not allocated'}
+                                </span>
+                              ) : outOfStock ? (
                                 <span className="availability unavailable"><span aria-hidden="true">ⓘ</span> Out of stock</span>
                               ) : rationed ? (
                                 <span className="availability rationed"><span aria-hidden="true">ⓘ</span> Rationed · {item.allocated} {item.unit}</span>
@@ -272,45 +343,37 @@ function AdminDashboard() {
                 <label>
                   <span>Staff remarks / allocation notes</span>
                   <textarea
-                    disabled={selectedBooking.status !== 'Pending'}
+                    disabled={selectedBooking.status !== 'Pending' || saving || loading || needsRefresh}
                     onChange={(event) => updateSelectedBooking((booking) => ({ ...booking, staffNotes: event.target.value }))}
                     placeholder="Add notes about substitutions, partial quantities, or preparation..."
                     rows="2"
+                    maxLength={2000}
                     value={selectedBooking.staffNotes}
                   />
-                  <small>Intended for the approval email when email integration is implemented.</small>
+                  <small>Saved with the staff decision.</small>
                 </label>
                 <label>
                   <span>Reason for disapproval</span>
                   <textarea
-                    disabled={selectedBooking.status !== 'Pending'}
+                    disabled={selectedBooking.status !== 'Pending' || saving || loading || needsRefresh}
                     onChange={(event) => updateSelectedBooking((booking) => ({ ...booking, denialReason: event.target.value }))}
                     placeholder="Enter a reason if disapproving this request..."
                     rows="2"
+                    maxLength={2000}
                     value={selectedBooking.denialReason}
                   />
-                  <small>Required for disapproval; intended for the email notification.</small>
+                  <small>Required and saved when disapproving the request.</small>
                 </label>
               </div>
 
-              <label className="email-option">
-                <input
-                  checked={selectedBooking.emailDecision}
-                  disabled={selectedBooking.status !== 'Pending'}
-                  onChange={(event) => updateSelectedBooking((booking) => ({ ...booking, emailDecision: event.target.checked }))}
-                  type="checkbox"
-                />
-                <span>Email decision to {selectedBooking.email}</span>
-              </label>
-
-              {notice && <p className="decision-notice" role="status">{notice}</p>}
+              <p className="allocation-footnote">Decisions are saved in the database. Email notifications are not connected yet.</p>
 
               <footer className="review-footer">
                 <div className="next-step">
                   <span>Next step · available after approval and preparation</span>
                   <div>
-                    <button className="prepare-button" disabled type="button"><span aria-hidden="true">⬡</span> Mark ready for pickup</button>
-                    <small>Sends a separate pickup email</small>
+                    <button className="prepare-button" disabled={selectedBooking.status !== 'Approved' || saving || loading || needsRefresh} onClick={() => saveDecision('ready')} type="button"><span aria-hidden="true">⬡</span> Mark ready for pickup</button>
+                    <small>Saves pickup readiness; no email is sent</small>
                   </div>
                 </div>
                 <div className="decision-actions">
@@ -318,16 +381,16 @@ function AdminDashboard() {
                   <div>
                     <button
                       className="disapprove-button"
-                      disabled={selectedBooking.status !== 'Pending'}
-                      onClick={disapproveBooking}
+                      disabled={selectedBooking.status !== 'Pending' || saving || loading || needsRefresh}
+                      onClick={() => saveDecision('denied')}
                       type="button"
                     >
                       <span aria-hidden="true">×</span> Disapprove request
                     </button>
                     <button
                       className="approve-button"
-                      disabled={selectedBooking.status !== 'Pending'}
-                      onClick={approveBooking}
+                      disabled={selectedBooking.status !== 'Pending' || saving || loading || needsRefresh}
+                      onClick={() => saveDecision('approved')}
                       type="button"
                     >
                       <span aria-hidden="true">✓</span> Approve request
@@ -339,7 +402,7 @@ function AdminDashboard() {
           ) : (
             <section className="review-panel no-selection">
               <h2>No booking selected</h2>
-              <p>Choose a request from the list to review its details.</p>
+              <p>{loading ? 'Loading bookings...' : 'Choose a request from the list to review its details.'}</p>
             </section>
           )}
         </section>
