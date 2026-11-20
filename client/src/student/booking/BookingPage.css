@@ -58,32 +58,37 @@
   border: 0;
 }
 
-/* Topbar mirrors the student inventory header. */
+/* Booking type is set ~1.2x the admin/inventory base, so 1.25 lands at the same on-screen size as their 1.5. */
+.student-booking-page {
+  zoom: 1.25;
+}
+
+/* Topbar mirrors the student inventory header (its values x1.2 to offset the smaller zoom). */
 :where(.booking-app) .booking-topbar {
   display: flex;
-  height: 58px;
+  height: 70px;
   align-items: center;
-  gap: 30px;
-  padding: 0 20px;
+  gap: 36px;
+  padding: 0 24px;
   color: #fff;
   background: var(--bk-brand);
 }
 :where(.booking-app) .booking-brand {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  font-size: 13px;
+  gap: 11px;
+  font-size: 15.6px;
 }
 :where(.booking-app) .booking-brand-mark {
   display: grid;
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   place-items: center;
   border: 1px solid rgb(255 255 255 / 55%);
   border-radius: 50%;
 }
 :where(.booking-app) .booking-topbar-link {
-  font-size: 12px;
+  font-size: 14.4px;
 }
 
 /* Page */
@@ -96,7 +101,7 @@
   margin-bottom: 14px;
 }
 :where(.booking-app) .booking-heading h1 {
-  font-size: 21px;
+  font-size: 24px;
   font-weight: 650;
   letter-spacing: -0.3px;
 }
@@ -150,7 +155,7 @@
   border-bottom: 1px solid var(--bk-line-soft);
 }
 :where(.booking-app) .card-heading h2 {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 650;
 }
 :where(.booking-app) .card-body {
@@ -393,6 +398,7 @@
 :where(.booking-app) .book-button {
   height: 36px;
   padding: 0 20px;
+  white-space: nowrap;
   color: #fff;
   background: var(--bk-primary);
   border: 0;

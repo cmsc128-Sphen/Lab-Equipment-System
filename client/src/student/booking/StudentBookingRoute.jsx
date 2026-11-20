@@ -34,7 +34,7 @@ export default function StudentBookingRoute() {
     }, [])
 
     return (
-        <div className="booking-app">
+        <div className="booking-app student-booking-page">
             <header className="booking-topbar">
                 <span className="booking-brand"><span className="booking-brand-mark" aria-hidden="true">L</span>Lab Equipment System</span>
                 <span className="booking-topbar-link">Booking</span>
