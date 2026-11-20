@@ -64,4 +64,20 @@ async function checkSupabaseConnection() {
     }
 }
 
-module.exports = { getSupabase, checkSupabaseConnection };
+function createUserClient(accessToken) {
+    // Check configuration using the existing initialization path.
+    getSupabase();
+
+    return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
+        global: {
+            headers: { Authorization: `Bearer ${accessToken}` },
+        },
+        auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false,
+        },
+    });
+}
+
+module.exports = { getSupabase, createUserClient, checkSupabaseConnection };

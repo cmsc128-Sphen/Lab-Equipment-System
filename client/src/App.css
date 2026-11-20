@@ -1,29 +1,147 @@
 .page-navigation {
+    position: relative;
+    z-index: 20;
     display: flex;
+    min-height: 66px;
     align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px 24px;
-    padding: 12px 20px;
+    gap: 32px;
+    padding: 5px 28px;
     color: #fff;
-    background: #294438;
-    font: 14px/1.5 system-ui, sans-serif;
-}
-
-.page-navigation-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 20px;
+    background: #4a5d4f url('/images/header/background.svg') top left / cover no-repeat;
+    font: 18px/1.5 Inter, Arial, sans-serif;
 }
 
 .page-navigation a {
     color: inherit;
     text-decoration: none;
+}
+
+.page-navigation-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+}
+
+.page-navigation-mark {
+    position: relative;
+    display: block;
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
+}
+
+.page-navigation-mark-circle {
+    position: absolute;
+    top: 2.52px;
+    left: 2.02px;
+}
+
+.page-navigation-logo {
+    position: relative;
+    display: block;
+    object-fit: cover;
+}
+
+.page-navigation-links {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    margin-left: auto;
+}
+
+.page-navigation-links a {
+    padding-block: 8px;
     border-bottom: 2px solid transparent;
 }
 
-.page-navigation a.active {
+.page-navigation-links a.active {
     border-bottom-color: #fff;
+}
+
+.page-navigation-links a:hover {
+    border-bottom-color: #cdd7cf;
+}
+
+.page-navigation-account {
+    position: relative;
+    max-width: 300px;
+    min-width: 0;
+}
+
+.page-navigation-account summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.page-navigation-account summary::-webkit-details-marker {
+    display: none;
+}
+
+.page-navigation-account summary span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.page-navigation-account summary img {
+    flex-shrink: 0;
+}
+
+.page-navigation-account[open] .page-navigation-chevron {
+    transform: rotate(180deg);
+}
+
+.page-navigation-account-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    min-width: 168px;
+    padding: 6px;
+    background: #fff;
+    border: 1px solid #d5dad7;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+}
+
+.page-navigation-account button {
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 2px;
+    color: #2b312e;
+    background: #fff;
+    text-align: left;
+}
+
+.page-navigation-account button:hover {
+    background: #edf3ef;
+}
+
+.page-navigation-account button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.page-navigation :is(a, summary):focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 4px;
+}
+
+.page-navigation-error {
+    flex-basis: 100%;
+    margin: 0;
+    padding-bottom: 8px;
+    font-size: 14px;
+}
+
+.page-navigation:has(.page-navigation-error) {
+    flex-wrap: wrap;
 }
 
 .missing-page {
@@ -33,4 +151,49 @@
 .student-inventory-page .app-shell {
     color: #475467;
     font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+}
+
+@media (max-width: 900px) {
+    .page-navigation {
+        gap: 16px;
+        padding-inline: 16px;
+        font-size: 16px;
+    }
+
+    .page-navigation-brand {
+        font-size: 16px;
+    }
+
+    .page-navigation-links {
+        gap: 20px;
+    }
+}
+
+@media (max-width: 700px) {
+    .page-navigation {
+        flex-wrap: wrap;
+        gap: 4px 16px;
+        padding: 8px 16px;
+    }
+
+    .page-navigation-brand {
+        flex: 1;
+        font-size: 14px;
+    }
+
+    .page-navigation-brand > span:last-child {
+        max-width: 115px;
+    }
+
+    .page-navigation-account {
+        max-width: 45%;
+        font-size: 14px;
+    }
+
+    .page-navigation-links {
+        order: 1;
+        width: 100%;
+        margin-left: 0;
+        padding-left: 68px;
+    }
 }

@@ -8,6 +8,10 @@ const express = require('express');
 
 const { checkSupabaseConnection } = require('./supabase');
 
+const { createAuthenticationMiddleware } = require('./auth');
+
+const { createInventoryRouter } = require('./inventory');
+
 const app = express();
 
 const clientOrigins = (process.env.CLIENT_ORIGINS || process.env.CLIENT_ORIGIN || 'http://localhost:5173')
@@ -34,6 +38,15 @@ app.get('/api/health/supabase', async (_request, response) => {
         });
     }
 });
+
+app.get('/api/auth/me', createAuthenticationMiddleware(), (request, response) => {
+    response.json({
+        user: request.auth.user,
+        profile: request.auth.profile,
+    });
+});
+
+app.use('/api', createInventoryRouter());
 
 app.use((_request, response) => {
     response.status(404).json({

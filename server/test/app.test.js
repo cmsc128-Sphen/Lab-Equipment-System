@@ -29,14 +29,17 @@ test('server exposes health endpoints and rejects unimplemented API routes', asy
             });
         }
 
-        await context.test('unused API routes return explicit errors', async () => {
-            // The scaffold must not pretend that inventory or booking features exist.
-            for (const path of ['/api/items', '/api/admin/bookings']) {
+        await context.test('inventory requires authentication and unused booking APIs return 404', async () => {
+            // Inventory now exists; booking writes remain outside this change.
+            for (const [path, status, code] of [
+                ['/api/items', 401, 'UNAUTHENTICATED'],
+                ['/api/admin/bookings', 404, 'NOT_FOUND'],
+            ]) {
                 const response = await fetch(`${baseUrl}${path}`);
                 const body = await response.json();
 
-                assert.equal(response.status, 404);
-                assert.equal(body.error.code, 'NOT_FOUND');
+                assert.equal(response.status, status);
+                assert.equal(body.error.code, code);
             }
         });
     } finally {

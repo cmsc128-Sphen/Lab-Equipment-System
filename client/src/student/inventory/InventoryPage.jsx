@@ -3,8 +3,6 @@ import { getItems } from '../../data/items.js'
 import { filterInventoryItems } from './inventoryFilters.js'
 import './InventoryPage.css'
 
-const useMockData = import.meta.env.USE_MOCK_DATA === 'true'
-
 function InventoryPage() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -18,7 +16,9 @@ function InventoryPage() {
   useEffect(() => {
     let active = true
 
-    getItems()
+    const controller = new AbortController()
+
+    getItems({ signal: controller.signal })
       .then(({ items: inventoryItems }) => {
         if (active) {
           setItems(inventoryItems)
@@ -34,6 +34,8 @@ function InventoryPage() {
 
     return () => {
       active = false
+
+      controller.abort()
     }
   }, [])
 
@@ -58,18 +60,6 @@ function InventoryPage() {
 
   return (
     <div className="app-shell">
-      <header className="topbar">
-        <a className="brand" href="/inventory">
-          <span className="brand-mark" aria-hidden="true">L</span>
-          <span>Lab Equipment System</span>
-        </a>
-        <span className="top-nav-link active">Inventory</span>
-        <div className="profile" aria-label="Account">
-          <span className="profile-avatar" aria-hidden="true">U</span>
-          <span className="profile-label">User</span>
-        </div>
-      </header>
-
       <div className="workspace">
         <aside className="sidebar" aria-label="Inventory navigation">
           <div className="sidebar-heading">CATALOGUE</div>
@@ -121,8 +111,6 @@ function InventoryPage() {
               <span className="summary-label">catalogue items</span>
             </div>
           </div>
-
-          {useMockData && <p>Sample inventory — displayed quantities are for preview.</p>}
 
           <section className="catalogue-panel" aria-label="Inventory catalogue">
             <div className="catalogue-toolbar">

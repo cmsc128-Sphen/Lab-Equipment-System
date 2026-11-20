@@ -5,4 +5,9 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   envPrefix: ['VITE_', 'USE_MOCK_DATA'],
   plugins: [react()],
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3000',
+    },
+  },
 })
