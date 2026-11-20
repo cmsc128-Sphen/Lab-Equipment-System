@@ -6,6 +6,8 @@ const cors = require('cors');
 
 const express = require('express');
 
+const { checkSupabaseConnection } = require('./supabase');
+
 const app = express();
 
 const clientOrigins = (process.env.CLIENT_ORIGINS || process.env.CLIENT_ORIGIN || 'http://localhost:5173')
@@ -19,6 +21,18 @@ app.use(express.json({ limit: '100kb' }));
 
 app.get(['/health', '/api/health'], (_request, response) => {
     response.json({ status: 'ok', service: 'lab-equipment-api' });
+});
+
+app.get('/api/health/supabase', async (_request, response) => {
+    response.set('Cache-Control', 'no-store');
+
+    try {
+        response.json(await checkSupabaseConnection());
+    } catch (error) {
+        response.status(503).json({
+            error: { code: 'SUPABASE_UNAVAILABLE', message: error.message },
+        });
+    }
 });
 
 app.use((_request, response) => {

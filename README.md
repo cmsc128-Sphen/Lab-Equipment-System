@@ -15,9 +15,9 @@
 
 The React frontend contains student inventory and booking screens plus a staff booking-review prototype. These screens use sample data; changes are not persisted and authentication is not implemented.
 
-The backend has been reset to a minimal Express server. It exposes only `GET /health` and `GET /api/health`; all other routes return 404. There is no database connection, authentication, inventory API, booking API or notification worker. The previous database migrations, seed data and unused backend implementation have been removed.
+The backend is a minimal Express server with a Supabase client. `GET /health` and `GET /api/health` report HTTP availability. `GET /api/health/supabase` checks whether the configured project's API is reachable and accepts the publishable key. Authentication, inventory, booking and notification features are not implemented yet; other routes return 404.
 
-Supabase remains the planned database. Its schema and integration will be rebuilt as features are implemented.
+The Supabase schema will be built as features are implemented, using the connected Supabase MCP when available. No seeder is used.
 
 ## Tech Stack
 
@@ -25,7 +25,7 @@ Supabase remains the planned database. Its schema and integration will be rebuil
 | --- | --- |
 | Frontend | React, Vite, React Router |
 | Backend | Node.js, Express |
-| Database | Supabase (planned; not configured) |
+| Database | Supabase |
 
 ## Requirements
 
@@ -57,9 +57,17 @@ Use `npm start` to run without watch mode. Optional settings in `server/.env` ca
 ```dotenv
 PORT=3000
 CLIENT_ORIGINS=http://localhost:5173
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_key
 ```
 
-The server starts without database credentials. Its health endpoints report HTTP availability only.
+The server can start without Supabase settings, but the Supabase check requires the project URL and publishable key in `server/.env`. Open `http://localhost:3000/api/health/supabase` to check the connection. A successful response is:
+
+```json
+{ "status": "ok", "supabase": "reachable", "database": "not_checked" }
+```
+
+This reads public Auth settings to confirm API reachability and key acceptance. It does not create data or verify table queries, permissions or the database schema. Those checks will follow when the first table is added. The frontend continues to use sample data.
 
 ## Checks
 
