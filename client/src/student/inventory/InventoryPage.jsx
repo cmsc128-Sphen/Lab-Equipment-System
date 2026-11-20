@@ -1,16 +1,24 @@
 import { useEffect, useMemo, useState } from 'react'
+
+import { useAuth } from '../../auth/AuthContext.js'
+
 import { getItems } from '../../data/items.js'
+
 import { readInventoryCart, toInventoryCartItem, writeInventoryCart } from '../inventoryCart.js'
+
 import { filterInventoryItems } from './inventoryFilters.js'
+
 import './InventoryPage.css'
 
 function InventoryPage() {
+  const { profile } = useAuth()
+
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [savedCart, setSavedCart] = useState(() => {
     try {
-      return { items: readInventoryCart(), error: '' }
+      return { items: readInventoryCart(profile.id), error: '' }
     } catch (loadError) {
       return { items: [], error: loadError.message }
     }
@@ -56,7 +64,8 @@ function InventoryPage() {
       : [...cart, toInventoryCartItem(item)]
 
     try {
-      writeInventoryCart(nextCart)
+      writeInventoryCart(profile.id, nextCart)
+
       setSavedCart({ items: nextCart, error: '' })
     } catch (saveError) {
       setSavedCart((current) => ({ ...current, error: saveError.message }))
