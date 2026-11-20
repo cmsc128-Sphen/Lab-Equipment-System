@@ -82,10 +82,13 @@ endpoint and async token getter. It does not implement auth or choose an endpoin
 It sends JSON with a Bearer token and surfaces API/session errors to the form.
 Adapt this boundary with Marc if the agreed payload/response differs.
 
-Proposed payload, pending agreement with Marc and JD:
+Payload:
+
+The student route sends this to `POST /api/bookings`:
 
 ```json
 {
+  "submissionKey": "6c1f0b7e-2d4a-4b8e-9f3c-1a2b3c4d5e6f",
   "subject": "Chemistry 16",
   "purpose": "Laboratory experiment",
   "borrowDate": "2026-11-01",
@@ -94,10 +97,12 @@ Proposed payload, pending agreement with Marc and JD:
 }
 ```
 
-The server must derive ownership from the authenticated user, verify profile,
-canonical units and current stock, save items atomically and assign Pending.
-The client never changes stock or implements reservations. Preventing duplicates
-across retries still requires server-side idempotency.
+The `submit_booking` database function (`database/student-bookings.sql`) takes
+the owner from the session, rechecks dates, active items, units and current
+stock, and saves the header and lines atomically as Pending. The page keeps one
+`submissionKey` per draft, so a retry after an uncertain failure returns the
+request already saved instead of creating a second one; the key changes only
+after "Create another request". The client never changes stock.
 
 Quantities are integer hundredths, as stored in `request_items` (2 pcs = 200,
 25.5 mL = 2550). Units are not sent; the server uses the item's own unit.

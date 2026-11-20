@@ -13,7 +13,7 @@
 
 ## Current status
 
-The student inventory page and booking item picker load the saved Supabase catalogue through the authenticated backend. Staff booking review loads saved requests, item quantities and available stock. Approval, disapproval and pickup-readiness decisions are persisted. Student booking submission and email delivery are not connected yet.
+The student inventory page and booking item picker load the saved Supabase catalogue through the authenticated backend. Staff booking review loads saved requests, item quantities and available stock. Approval, disapproval and pickup-readiness decisions are persisted. Students submit bookings as saved Pending requests once [database/student-bookings.sql](database/student-bookings.sql) is applied. Email delivery is not connected yet.
 
 The backend exposes HTTP health endpoints, a Supabase API connection check, the account profile endpoint, authenticated `GET /api/items`, and staff booking review endpoints. Unused routes return 404.
 
@@ -85,6 +85,18 @@ Sign in with an active, verified `admin` or `lab_aid` account and open `/invento
 - Decisions record the authenticated reviewer. Email delivery is unavailable; the page states that no email was sent. Refresh after a rejected or uncertain save before trying again.
 
 [database/admin-bookings.sql](database/admin-bookings.sql) is the additive review-function definition already applied to the connected project. Apply it after the baseline when initializing another project. Only the guarded review operation can write; authenticated users retain read-only table grants. No service key is needed in the frontend or review API.
+
+## Student booking submission
+
+Sign in with an active, verified student account and open `/student/booking`. The draft starts from the inventory page's booking cart.
+
+- `POST /api/bookings` accepts `submissionKey` (UUID, generated once per draft), `subject`, `purpose`, `borrowDate`, `returnDate` and `items` of `{ inventoryId, quantity }`, with quantities in integer hundredths. Staff accounts receive 403.
+- The `submit_booking` database function saves the request header and its lines in one transaction. The owner, borrower snapshot and Pending status come from the signed-in profile; the client cannot set them.
+- It rechecks the subject and purpose, dates (Asia/Manila calendar day, no past borrowing date, return on or after borrowing), active items and categories, whole `pcs` quantities, duplicates and current available stock. Any failure saves nothing.
+- Pending requests do not reserve stock. Staff approval rechecks and reserves it.
+- Repeating a submission key returns the request already saved with that key (HTTP 200) instead of saving a second one. A new save returns 201 with `{ id, reference, status: 'Pending', createdAt }`.
+
+[database/student-bookings.sql](database/student-bookings.sql) is additive. Apply it after the baseline and `admin-bookings.sql`, in the Supabase SQL editor. [database/tests/student-bookings.sql](database/tests/student-bookings.sql) checks permissions, each rejection, no partial saves, the saved header and lines, unchanged stock and key replay. It rolls back all changes and expects the `MOCK-STUDENT-001` and `MOCK-ADMIN-001` fixtures plus at least one active item in stock.
 
 ## Database foundation
 
