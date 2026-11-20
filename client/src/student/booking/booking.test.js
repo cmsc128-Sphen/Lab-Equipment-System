@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { bookingPayload, refreshDraft, validateBooking } from './booking.js'
+import { bookingPayload, recheckErrors, refreshDraft, validateBooking } from './booking.js'
 import { createRequestSubmitter } from '../../services/bookingRequests.js'
 
 const form = { studentId: '2026-00001', subject: 'Chemistry 16', purpose: 'Research', borrowDate: '2026-11-01', returnDate: '2026-11-02' }
@@ -41,6 +41,47 @@ test('rejects empty selection, duplicate items and invalid quantities', () => {
     assert.ok(validate(form, [{ ...equipment, quantity }])['item-beaker'], quantity)
   }
   assert.ok(validate(form, [{ ...chemical, quantity: '21' }])['item-salt'])
+})
+
+test('quantity feedback names the specific problem', () => {
+  const message = (quantity, item = equipment) => validate(form, [{ ...item, quantity }])[`item-${item.id}`]
+  assert.equal(message(''), 'Enter a quantity.')
+  assert.equal(message('  '), 'Enter a quantity.')
+  assert.equal(message('Infinity'), 'Enter a valid number.')
+  assert.equal(message('abc'), 'Enter a valid number.')
+  assert.equal(message('0'), 'Enter a quantity greater than zero.')
+  assert.equal(message('-2'), 'Enter a quantity greater than zero.')
+  assert.equal(message('1.5'), 'Quantities in pcs must be whole numbers.')
+  assert.equal(message('0.125', chemical), 'Use at most 2 decimal places.')
+  assert.equal(message('4'), 'Only 3 pcs currently available.')
+})
+
+test('missing and invalid fields each get their own message', () => {
+  const errors = validate({ studentId: '', subject: ' ', purpose: '', borrowDate: '2026-13-01', returnDate: '' }, [])
+  assert.deepEqual(errors, {
+    subject: 'Enter your subject.',
+    purpose: 'Choose the purpose of your request.',
+    borrowDate: 'Choose a valid borrowing date.',
+    returnDate: 'Choose a valid return date.',
+    items: 'Select at least one item.',
+  })
+})
+
+test('correcting a field clears only the errors that no longer apply', () => {
+  const today = '2026-10-30'
+  const bad = { ...form, subject: '', purpose: 'Other', purposeOther: '', borrowDate: '2026-11-05', returnDate: '2026-11-02' }
+  const errors = validateBooking(bad, [equipment], today)
+  assert.deepEqual(Object.keys(errors).sort(), ['purposeOther', 'returnDate', 'subject'])
+  // Switching away from Other drops its hidden error; the others stay.
+  assert.deepEqual(Object.keys(recheckErrors(errors, { ...bad, purpose: 'Thesis' }, [equipment], today)).sort(), ['returnDate', 'subject'])
+  // Moving the borrow date earlier fixes the return-date error without touching the return field.
+  assert.deepEqual(Object.keys(recheckErrors(errors, { ...bad, borrowDate: '2026-11-01' }, [equipment], today)).sort(), ['purposeOther', 'subject'])
+  // Errors that were not shown are not added while typing.
+  assert.deepEqual(recheckErrors({}, bad, [], today), {})
+  // Item errors update with the item and clear when it is removed.
+  const itemErrors = validateBooking(form, [{ ...equipment, quantity: '0' }], today)
+  assert.equal(recheckErrors(itemErrors, form, [{ ...equipment, quantity: '9' }], today)['item-beaker'], 'Only 3 pcs currently available.')
+  assert.deepEqual(recheckErrors(itemErrors, form, [chemical], today), {})
 })
 
 test('builds a trimmed payload with integer-hundredth quantities and no borrower or unit fields', () => {

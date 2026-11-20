@@ -21,17 +21,26 @@ export function validateBooking(form, items, today = localDate()) {
   if (!items.length) errors.items = 'Select at least one item.'
   const ids = new Set()
   for (const item of items) {
-    const quantity = Number(item.quantity)
+    const entered = String(item.quantity ?? '').trim()
+    const quantity = Number(entered)
     const key = `item-${item.id}`
     if (ids.has(item.id)) errors.items = 'Each item may only appear once.'
     ids.add(item.id)
-    if (!Number.isFinite(quantity) || quantity <= 0) errors[key] = 'Enter a quantity greater than zero.'
+    if (!entered) errors[key] = 'Enter a quantity.'
+    else if (!Number.isFinite(quantity)) errors[key] = 'Enter a valid number.'
+    else if (quantity <= 0) errors[key] = 'Enter a quantity greater than zero.'
     else if (item.unit === 'pcs' && !Number.isSafeInteger(quantity)) errors[key] = 'Quantities in pcs must be whole numbers.'
     else if (!Number.isSafeInteger(Math.round(quantity * 100)) || Math.abs(quantity * 100 - Math.round(quantity * 100)) > 1e-6) errors[key] = 'Use at most 2 decimal places.'
     else if (quantity > item.available) errors[key] = `Only ${item.available} ${item.unit} currently available.`
     if (!item.unit) errors[key] = 'This item needs a unit before it can be requested.'
   }
   return errors
+}
+
+// After a failed submit, keep only the errors that still apply (with current messages); never add new ones while typing.
+export function recheckErrors(current, form, items, today = localDate()) {
+  const latest = validateBooking(form, items, today)
+  return Object.fromEntries(Object.keys(current).filter((key) => current[key] && latest[key]).map((key) => [key, latest[key]]))
 }
 
 // Quantities are sent as integer hundredths (2 pcs = 200, 25.5 mL = 2550), matching request_items.
