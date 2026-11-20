@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { bookingPayload, validateBooking } from './booking.js'
 import { createRequestSubmitter } from '../../services/bookingRequests.js'
 
-const form = { email: 'student@up.edu.ph', studentId: '2026-00001', subject: 'Chemistry 16', purpose: 'Experiment', borrowDate: '2026-11-01', returnDate: '2026-11-02' }
+const form = { studentId: '2026-00001', subject: 'Chemistry 16', purpose: 'Research', borrowDate: '2026-11-01', returnDate: '2026-11-02' }
 const equipment = { id: 'beaker', name: 'Beaker', category: 'equipment', quantity: '2', unit: 'pcs', available: 3 }
 const chemical = { id: 'salt', name: 'Salt', category: 'chemical', quantity: '0.25', unit: 'g', available: 20 }
 const validate = (fields = form, items = [equipment, chemical]) => validateBooking(fields, items, '2026-10-30')
@@ -13,8 +13,10 @@ test('accepts whole equipment and fractional chemical quantities', () => {
 })
 
 test('rejects empty forms, past/reversed dates and nonexistent calendar dates', () => {
-  assert.ok(validate({ ...form, email: 'invalid', purpose: ' ' }).email)
-  assert.ok(validate({ ...form, purpose: ' ' }).purpose)
+  assert.ok(validate({ ...form, studentId: ' ' }).studentId)
+  assert.ok(validate({ ...form, purpose: '' }).purpose)
+  assert.ok(validate({ ...form, purpose: 'Other', purposeOther: ' ' }).purposeOther)
+  assert.deepEqual(validate({ ...form, purpose: 'Other', purposeOther: 'Science fair' }), {})
   assert.ok(validate({ ...form, borrowDate: '2026-10-29' }).borrowDate)
   assert.ok(validate({ ...form, returnDate: '2026-10-31' }).returnDate)
   assert.ok(validate({ ...form, borrowDate: '2026-02-30' }).borrowDate)
@@ -33,6 +35,7 @@ test('rejects empty selection, duplicate items and invalid quantities', () => {
 test('builds a trimmed payload with numeric quantities, inventory IDs and fixed units', () => {
   const payload = bookingPayload({ ...form, subject: ' Chemistry 16 ' }, [equipment, chemical])
   assert.equal(payload.subject, 'Chemistry 16')
+  assert.equal(bookingPayload({ ...form, purpose: 'Other', purposeOther: ' Science fair ' }, []).purpose, 'Science fair')
   assert.deepEqual(payload.items, [{ inventoryId: 'beaker', quantity: 2, unit: 'pcs' }, { inventoryId: 'salt', quantity: 0.25, unit: 'g' }])
   assert.equal('available' in payload.items[0], false)
 })
