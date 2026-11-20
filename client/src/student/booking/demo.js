@@ -32,7 +32,7 @@ export function createDemoSubmitter(mode) {
       const original = saved.get(payload.submissionKey)
       if (original.details !== details) {
         console.info(`[preview] rejected changed retry of ${original.result.reference}`)
-        throw demoFailure(`This request was already saved as ${original.result.reference}. Changes made after it was saved were not included.`, 'BOOKING_KEY_REUSED')
+        throw demoFailure('This submission key was already used for a different request.', 'BOOKING_SUBMISSION_CONFLICT')
       }
       console.info(`[preview] replayed ${original.result.reference}`)
       return original.result

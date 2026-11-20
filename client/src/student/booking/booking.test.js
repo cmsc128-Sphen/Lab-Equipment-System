@@ -156,7 +156,7 @@ test('every attempt carries a timeout signal and the same key is resent on retry
   assert.deepEqual(sent.map((options) => JSON.parse(options.body).submissionKey), ['draft-key', 'draft-key'])
 })
 
-test('a reused key with changed details surfaces its code and the saved reference', async () => {
-  const submit = createRequestSubmitter({ endpoint: '/api/bookings', getAccessToken: async () => 'token', fetchImpl: async () => new Response(JSON.stringify({ error: { code: 'BOOKING_KEY_REUSED', message: 'This request was already saved as REQ-2026-7. Changes made after it was saved were not included.', reference: 'REQ-2026-7' } }), { status: 409 }) })
-  await assert.rejects(submit({}), (error) => error.code === 'BOOKING_KEY_REUSED' && /REQ-2026-7/.test(error.message))
+test('a reused key with changed details surfaces the server conflict code', async () => {
+  const submit = createRequestSubmitter({ endpoint: '/api/bookings', getAccessToken: async () => 'token', fetchImpl: async () => new Response(JSON.stringify({ error: { code: 'BOOKING_SUBMISSION_CONFLICT', message: 'This submission key was already used for a different request.' } }), { status: 409 }) })
+  await assert.rejects(submit({}), (error) => error.code === 'BOOKING_SUBMISSION_CONFLICT')
 })

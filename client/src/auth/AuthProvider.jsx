@@ -72,6 +72,31 @@ export default function AuthProvider({ children }) {
                         }
                     } catch (error) {
                         if (active && currentVersion === version) {
+                            if (error.code === 'UNAUTHENTICATED') {
+                                let signOutFailed = false
+
+                                try {
+                                    const result = await supabase.auth.signOut({ scope: 'local' })
+
+                                    signOutFailed = Boolean(result.error)
+                                } catch {
+                                    signOutFailed = true
+                                }
+
+                                if (active && currentVersion === version) {
+                                    setAccount({
+                                        session: null,
+                                        profile: null,
+                                        loading: false,
+                                        error: signOutFailed
+                                            ? 'Your session expired. Sign in again; the saved session could not be cleared.'
+                                            : 'Your session expired. Sign in again.',
+                                    })
+                                }
+
+                                return
+                            }
+
                             setAccount({ session, profile: null, loading: false, error: error.message || 'Unable to load your account.' })
                         }
                     }
@@ -123,6 +148,8 @@ export default function AuthProvider({ children }) {
         if (error) {
             throw new Error('Unable to sign out. Try again.')
         }
+
+        setAccount({ session: null, profile: null, loading: false, error: '' })
     }
 
     return (
