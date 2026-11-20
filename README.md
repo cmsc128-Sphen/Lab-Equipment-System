@@ -75,6 +75,8 @@ This health endpoint reads public Auth settings to confirm API reachability and 
 
 Both screens use `client/src/data/items.js`. It loads every catalogue page before displaying results, so local search, category filters and pagination cover the complete result set. Incomplete, changing, malformed or oversized catalogues produce an explicit error rather than silently displaying partial search results. The initial client-side catalogue limit is 5,000 items; a larger catalogue needs server-side search/filtering. Page-unmount cancellation and request timeouts stop stale loads.
 
+The unsaved booking cart is stored in browser local storage under a key scoped to the authenticated profile ID. Inventory and booking use the same account-specific cart. Sign-out removes that user's cart and the legacy unscoped cart key; the legacy cart is never read or migrated because its owner cannot be established safely.
+
 ## Admin booking review
 
 Sign in with an active, verified `admin` or `lab_aid` account and open `/inventory/admin` (`/admin/bookings` redirects there). Student registrations remain students and cannot access this page or its APIs. The disabled mock identities are reference records, not login accounts.
