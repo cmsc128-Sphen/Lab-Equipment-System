@@ -17,14 +17,16 @@ link:`https://www.figma.com/design/ZDwpMP3tRk4zyvx14o6V6f/142-Lab-Final-Project?
 | --- | --- |
 | Frontend | React |
 | Backend | Node.js & Express.js |
-| Database | Firebase |
+| Database | Supabase (PostgreSQL) |
+
+The database is being migrated from Firebase to Supabase. Supabase is the planned database; the existing backend still uses Firebase until the code migration is complete.
 
 ## Requirements
 
 - Git
 - npm
 - Node.js (20.x+)
-- A Firebase database
+- A Supabase project
 
 ## Installation & Initialization
 
@@ -35,16 +37,13 @@ git clone https://github.com/Yomaruichi/Lab-Equipment-System.git
 cd Lab-Equipment-System
 ```
 
-2. Create `.env` file in project root
+2. Prepare Supabase environment variables for the client in `client/.env`
+
+These variables are for the planned Supabase integration and are not connected to the application yet. Existing backend configuration remains necessary until the migration is complete.
 
 ```bash
-VITE_FIREBASE_API_KEY=
-VITE_FIREBASE_AUTH_DOMAIN=
-VITE_FIREBASE_PROJECT_ID=
-VITE_FIREBASE_STORAGE_BUCKET=
-VITE_FIREBASE_MESSAGING_SENDER_ID=
-VITE_FIREBASE_APP_ID=
-VITE_FIREBASE_MEASUREMENT_ID=
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
 ```
 
 3. Set up the client
