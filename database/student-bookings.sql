@@ -15,6 +15,8 @@ declare
     line jsonb;
     stock public.items%rowtype;
     quantity bigint;
+    normalized_items jsonb;
+    saved_items jsonb;
 begin
     -- Definer rights are needed because students have no table write grants.
     -- Owner, status and snapshots come from verified records, never from the caller.
@@ -22,25 +24,16 @@ begin
         raise exception 'BOOKING_FORBIDDEN';
     end if;
 
-    select * into actor from public.profiles where id = auth.uid() and is_active;
+    select * into actor from public.profiles where id = auth.uid() and is_active for share;
 
     select email into actor_email from auth.users where id = auth.uid();
 
-    if not found or actor.id is null then
+    if not found or actor.id is null or actor.role <> 'student' then
         raise exception 'BOOKING_FORBIDDEN';
     end if;
 
     if p_submission_key is null then
         raise exception 'BOOKING_INVALID';
-    end if;
-
-    -- A retried submission returns the request already saved under this key.
-    select * into booking from public.requests
-    where requester_id = actor.id and submission_key = p_submission_key;
-
-    if found then
-        return jsonb_build_object('id', booking.id, 'reference', booking.request_no,
-            'status', booking.status, 'createdAt', booking.created_at, 'replayed', true);
     end if;
 
     if length(trim(coalesce(p_subject, ''))) not between 1 and 200
@@ -49,12 +42,16 @@ begin
     end if;
 
     if p_borrow_date is null or p_return_date is null
-        or p_borrow_date < today or p_return_date < p_borrow_date then
+        or not isfinite(p_borrow_date) or not isfinite(p_return_date)
+        or p_return_date < p_borrow_date then
         raise exception 'BOOKING_DATES_INVALID';
     end if;
 
-    if jsonb_typeof(p_items) is distinct from 'array'
-        or jsonb_array_length(p_items) not between 1 and 100
+    if jsonb_typeof(p_items) is distinct from 'array' then
+        raise exception 'BOOKING_ITEMS_INVALID';
+    end if;
+
+    if jsonb_array_length(p_items) not between 1 and 100
         or exists (
             select 1 from jsonb_array_elements(p_items) a
             where jsonb_typeof(a) is distinct from 'object'
@@ -66,36 +63,66 @@ begin
         raise exception 'BOOKING_ITEMS_INVALID';
     end if;
 
+    select jsonb_agg(jsonb_build_object('inventoryId', (a->>'inventoryId')::uuid,
+        'quantity', (a->>'quantity')::bigint) order by (a->>'inventoryId')::uuid)
+    into normalized_items from jsonb_array_elements(p_items) a;
+
+    if exists (select 1 from jsonb_array_elements(normalized_items) a
+        where (a->>'quantity')::bigint > 9007199254740991) then
+        raise exception 'BOOKING_ITEMS_INVALID';
+    end if;
+
+    -- Serialize retries of the same student's draft, including concurrent first submissions.
+    -- Hash collisions only serialize unrelated drafts; they cannot mix ownership or data.
+    perform pg_advisory_xact_lock(hashtextextended(actor.id::text || ':' || p_submission_key::text, 0));
+
+    select * into booking from public.requests
+    where requester_id = actor.id and submission_key = p_submission_key;
+
+    if found then
+        select jsonb_agg(jsonb_build_object('inventoryId', ri.item_id, 'quantity', ri.qty_requested)
+            order by ri.item_id) into saved_items
+        from public.request_items ri where ri.request_id = booking.id;
+
+        if booking.subject <> trim(p_subject) or booking.purpose <> trim(p_purpose)
+            or booking.borrow_date <> p_borrow_date or booking.return_date <> p_return_date
+            or saved_items is distinct from normalized_items then
+            raise exception 'BOOKING_SUBMISSION_CONFLICT';
+        end if;
+
+        -- A genuine retry succeeds even if its dates have passed or staff reviewed it already.
+        return jsonb_build_object('id', booking.id, 'reference', booking.request_no,
+            'status', booking.status, 'createdAt', booking.created_at, 'replayed', true);
+    end if;
+
+    if p_borrow_date < today then
+        raise exception 'BOOKING_DATES_INVALID';
+    end if;
+
     insert into public.requests (
         requester_id, requester_snapshot, subject, purpose, borrow_date, return_date, status, submission_key
     ) values (
         actor.id,
         jsonb_build_object('id_number', actor.id_number, 'name', actor.first_name || ' ' || actor.last_name,
-            'email', actor_email, 'requester_type', actor.requester_type),
+            'email', actor_email, 'requester_type', coalesce(actor.requester_type, 'undergraduate')),
         trim(p_subject), trim(p_purpose), p_borrow_date, p_return_date, 'pending', p_submission_key
     )
-    on conflict (requester_id, submission_key) do nothing
     returning * into booking;
 
-    -- A concurrent retry with the same key committed first.
-    if booking.id is null then
-        select * into booking from public.requests
-        where requester_id = actor.id and submission_key = p_submission_key;
-
-        return jsonb_build_object('id', booking.id, 'reference', booking.request_no,
-            'status', booking.status, 'createdAt', booking.created_at, 'replayed', true);
-    end if;
-
     -- Pending requests do not reserve stock; this check is advisory and staff approval rechecks it.
-    for line in select a from jsonb_array_elements(p_items) a order by a->>'inventoryId'
+    for line in select a from jsonb_array_elements(normalized_items) a order by (a->>'inventoryId')::uuid
     loop
         quantity := (line->>'quantity')::bigint;
 
-        select * into stock from public.items where id = (line->>'inventoryId')::uuid;
+        select * into stock from public.items where id = (line->>'inventoryId')::uuid for share;
 
-        if not found or not stock.is_active or not exists (
-            select 1 from public.categories c where c.id = stock.category_id and c.is_active
-        ) then
+        if not found or not stock.is_active then
+            raise exception 'BOOKING_ITEM_UNAVAILABLE';
+        end if;
+
+        perform c.id from public.categories c where c.id = stock.category_id and c.is_active for share;
+
+        if not found then
             raise exception 'BOOKING_ITEM_UNAVAILABLE';
         end if;
 

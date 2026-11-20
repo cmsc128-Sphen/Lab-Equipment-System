@@ -29,11 +29,13 @@ test('server exposes health endpoints and rejects unimplemented API routes', asy
             });
         }
 
-        await context.test('inventory and admin bookings require authentication', async () => {
-            // Both data APIs reject requests without a user session.
+        await context.test('inventory, staff bookings and student bookings require authentication', async () => {
+            // Each read path rejects requests without a user session.
             for (const [path, status, code] of [
                 ['/api/items', 401, 'UNAUTHENTICATED'],
                 ['/api/admin/bookings', 401, 'UNAUTHENTICATED'],
+                ['/api/bookings', 401, 'UNAUTHENTICATED'],
+                ['/api/bookings/94e56ef0-b7f3-4d95-b7f0-02230ad8d8fc', 401, 'UNAUTHENTICATED'],
             ]) {
                 const response = await fetch(`${baseUrl}${path}`);
                 const body = await response.json();
@@ -41,6 +43,13 @@ test('server exposes health endpoints and rejects unimplemented API routes', asy
                 assert.equal(response.status, status);
                 assert.equal(body.error.code, code);
             }
+
+            // The submission path must not reach Supabase without authentication either.
+            const response = await fetch(`${baseUrl}/api/bookings`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
+            });
+
+            assert.equal(response.status, 401);
         });
     } finally {
         // Release the listener even when an assertion fails.
