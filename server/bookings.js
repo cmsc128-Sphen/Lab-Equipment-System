@@ -16,10 +16,85 @@ const decisionErrors = {
     BOOKING_ALLOCATION_REQUIRED: [400, 'Allocate at least one item before approving.'],
 };
 
+const submissionErrors = {
+    BOOKING_FORBIDDEN: [403, 'Only active student accounts can submit booking requests.'],
+    BOOKING_INVALID: [400, 'The request could not be read. Reload the page and try again.'],
+    BOOKING_DETAILS_INVALID: [400, 'Enter a subject and purpose.'],
+    BOOKING_DATES_INVALID: [400, 'Choose a borrowing date from today onward and a return date on or after it.'],
+    BOOKING_ITEMS_INVALID: [400, 'Check your items: each needs a valid quantity and may only appear once.'],
+    BOOKING_ITEM_UNAVAILABLE: [409, 'An item is no longer available. Reload the page to update your request.'],
+    BOOKING_STOCK_EXCEEDED: [409, 'An item no longer has enough stock. Reload the page and lower the quantity.'],
+};
+
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+// Shape checks only; the database function owns the authoritative rules.
+function validSubmission(body) {
+    const { submissionKey, subject, purpose, borrowDate, returnDate, items } = body || {};
+
+    return typeof submissionKey === 'string' && uuidPattern.test(submissionKey)
+        && typeof subject === 'string' && subject.length <= 200
+        && typeof purpose === 'string' && purpose.length <= 2000
+        && typeof borrowDate === 'string' && datePattern.test(borrowDate)
+        && typeof returnDate === 'string' && datePattern.test(returnDate)
+        && Array.isArray(items) && items.length >= 1 && items.length <= 100
+        && items.every((item) => item && typeof item.inventoryId === 'string' && uuidPattern.test(item.inventoryId)
+            && Number.isSafeInteger(item.quantity) && item.quantity > 0);
+}
+
 function createBookingsRouter(authenticate = createAuthenticationMiddleware()) {
     const router = express.Router();
 
     router.use('/admin/bookings', authenticate, requireRoles('admin', 'lab_aid'));
+
+    router.post('/bookings', authenticate, requireRoles('student'), async (request, response) => {
+        if (!validSubmission(request.body)) {
+            return response.status(400).json({ error: { code: 'BOOKING_INVALID', message: submissionErrors.BOOKING_INVALID[1] } });
+        }
+
+        const { submissionKey, subject, purpose, borrowDate, returnDate, items } = request.body;
+
+        // INFO before the atomic RPC; only the line count is logged, never borrower details.
+        console.log(`[INFO] bookings.submit_started lines=${items.length}`);
+
+        try {
+            const { data, error } = await request.auth.supabase.rpc('submit_booking', {
+                p_submission_key: submissionKey,
+                p_subject: subject,
+                p_purpose: purpose,
+                p_borrow_date: borrowDate,
+                p_return_date: returnDate,
+                p_items: items.map(({ inventoryId, quantity }) => ({ inventoryId, quantity })),
+            }).abortSignal(AbortSignal.timeout(15000));
+
+            if (error) {
+                const known = submissionErrors[error.message];
+
+                if (!known) throw new Error('Submission unavailable');
+
+                // WARN for a rejected submission; nothing was saved and the student can correct it.
+                console.warn(`[WARN] bookings.submit_rejected code=${error.message} nextAction=correct`);
+
+                return response.status(known[0]).json({ error: { code: error.message, message: known[1] } });
+            }
+
+            if (!data || typeof data.reference !== 'string' || data.status !== 'pending') throw new Error('Unexpected result');
+
+            // INFO only after the database commits the header and lines.
+            console.log(`[INFO] bookings.submit_completed replayed=${Boolean(data.replayed)}`);
+
+            return response.status(data.replayed ? 200 : 201).json({
+                id: data.id, reference: data.reference, status: 'Pending', createdAt: data.createdAt,
+            });
+        } catch {
+            // ERROR for uncertain outcomes; retrying with the same submission key cannot save twice.
+            console.error('[ERROR] bookings.submit_failed nextAction=retry_same_key');
+
+            return response.status(503).json({ error: { code: 'SUBMISSION_UNAVAILABLE', message: 'Unable to confirm your request was saved. Try submitting again; it will not be saved twice.' } });
+        }
+    });
 
     router.get('/admin/bookings', async (request, response) => {
         const pageText = request.query.page ?? '1';

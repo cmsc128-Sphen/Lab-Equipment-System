@@ -24,6 +24,12 @@ async function fixture(context, options = {}) {
 
                 queries.push({ url, init });
 
+                if (url.pathname.endsWith('/rpc/submit_booking')) {
+                    return options.submitError
+                        ? new Response(JSON.stringify({ message: options.submitError, code: 'P0001' }), { status: 400 })
+                        : new Response(JSON.stringify(options.submitResult ?? { id: bookingId, reference: 'REQ-2026-7', status: 'pending', createdAt: '2026-11-20T10:00:00+00:00', replayed: false }), { headers: { 'Content-Type': 'application/json' } });
+                }
+
                 if (url.pathname.endsWith('/rpc/review_booking')) {
                     return options.decisionError
                         ? new Response(JSON.stringify({ message: options.decisionError, code: 'P0001' }), { status: 400 })
@@ -148,4 +154,89 @@ test('approval uses one RPC and preserves version, allocation, and safe conflict
     assert.equal(rejected.status, 409);
 
     assert.match((await rejected.json()).error.message, /Refresh/);
+});
+
+const itemId = 'c1f6d7a2-3b4c-4d5e-8f90-123456789abc';
+
+function submission(overrides = {}) {
+    return { submissionKey: 'f0e1d2c3-b4a5-4697-8879-6a5b4c3d2e1f', subject: 'Chem 16', purpose: 'Research',
+        borrowDate: '2026-11-25', returnDate: '2026-11-26', items: [{ inventoryId: itemId, quantity: 200 }], ...overrides };
+}
+
+function submit(url, body) {
+    return fetch(url.replace('/admin/bookings', '/bookings'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+}
+
+test('students submit through one RPC and get the saved Pending reference', async (context) => {
+    const { url, queries } = await fixture(context, { role: 'student' });
+
+    const response = await submit(url, { ...submission(), borrower: { id: 'someone-else' }, status: 'approved' });
+
+    assert.equal(response.status, 201);
+
+    assert.deepEqual(await response.json(), { id: bookingId, reference: 'REQ-2026-7', status: 'Pending', createdAt: '2026-11-20T10:00:00+00:00' });
+
+    assert.equal(queries.length, 1);
+
+    const payload = JSON.parse(queries[0].init.body);
+
+    // Owner and status are never forwarded; the database takes them from the session.
+    assert.deepEqual(Object.keys(payload).sort(), ['p_borrow_date', 'p_items', 'p_purpose', 'p_return_date', 'p_subject', 'p_submission_key']);
+
+    assert.deepEqual(payload.p_items, [{ inventoryId: itemId, quantity: 200 }]);
+});
+
+test('a retried submission key returns the original request with 200', async (context) => {
+    const { url } = await fixture(context, { role: 'student', submitResult: { id: bookingId, reference: 'REQ-2026-7', status: 'pending', createdAt: '2026-11-20T10:00:00+00:00', replayed: true } });
+
+    const response = await submit(url, submission());
+
+    assert.equal(response.status, 200);
+
+    assert.equal((await response.json()).reference, 'REQ-2026-7');
+});
+
+test('staff accounts and malformed submissions are rejected before database work', async (context) => {
+    const staff = await fixture(context, { role: 'admin' });
+
+    assert.equal((await submit(staff.url, submission())).status, 403);
+
+    assert.equal(staff.queries.length, 0);
+
+    const { url, queries } = await fixture(context, { role: 'student' });
+
+    for (const body of [
+        submission({ submissionKey: 'not-a-uuid' }),
+        submission({ items: [] }),
+        submission({ items: [{ inventoryId: itemId, quantity: 1.5 }] }),
+        submission({ items: [{ inventoryId: itemId, quantity: 0 }] }),
+        submission({ borrowDate: '25/11/2026' }),
+        submission({ subject: 3 }),
+    ]) {
+        assert.equal((await submit(url, body)).status, 400, JSON.stringify(body));
+    }
+
+    assert.equal(queries.length, 0);
+});
+
+test('database validation failures return specific messages and unknown failures stay private', async (context) => {
+    const stock = await fixture(context, { role: 'student', submitError: 'BOOKING_STOCK_EXCEEDED' });
+
+    const rejected = await submit(stock.url, submission());
+
+    assert.equal(rejected.status, 409);
+
+    assert.match((await rejected.json()).error.message, /enough stock/);
+
+    const unknown = await fixture(context, { role: 'student', submitError: 'duplicate key value violates private_constraint' });
+
+    const failed = await submit(unknown.url, submission());
+
+    assert.equal(failed.status, 503);
+
+    assert.doesNotMatch(await failed.text(), /private_constraint/);
+
+    const odd = await fixture(context, { role: 'student', submitResult: { reference: 'REQ-1', status: 'approved' } });
+
+    assert.equal((await submit(odd.url, submission())).status, 503);
 });
