@@ -1,27 +1,17 @@
-const path = require('node:path');
-
-require('dotenv').config({
-    path: path.join(__dirname, '.env'),
-    quiet: true,
-});
-
-const { createApp } = require('./src/app');
-
-const { readConfig, createSupabaseFactory } = require('./src/config/supabase');
+const app = require('./app');
 
 if (require.main === module) {
     try {
-        // INFO before startup; database access has not been attempted yet.
+        // INFO before HTTP startup; no external services are initialized.
         console.log('[INFO] server.starting');
 
-        const config = readConfig();
+        const port = Number(process.env.PORT || 3000);
 
-        const app = createApp({ createClient: createSupabaseFactory(config), config });
+        if (!Number.isInteger(port) || port < 0 || port > 65535) {
+            throw new Error('PORT must be a valid TCP port.');
+        }
 
-        // INFO after validating configuration; remote connectivity is verified by subsequent API requests.
-        console.log('[INFO] supabase.configured connectivity=not_checked');
-
-        const server = app.listen(config.port, () => {
+        const server = app.listen(port, () => {
             // INFO after the listener is ready; port identifies the local service.
             console.log(`[INFO] server.listening port=${server.address().port}`);
         });
@@ -63,4 +53,4 @@ if (require.main === module) {
     }
 }
 
-module.exports = { createApp };
+module.exports = app;
