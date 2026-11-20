@@ -22,6 +22,7 @@ export default function BookingPage({ initialItems = [], inventory = [], invento
   const [page, setPage] = useState(0)
   const [query, setQuery] = useState('')
   const inFlight = useRef(false)
+  const submissionKey = useRef(crypto.randomUUID())
   const picker = useRef(null)
   const feedback = useRef(null)
   const locked = submitting || Boolean(confirmation)
@@ -95,7 +96,7 @@ export default function BookingPage({ initialItems = [], inventory = [], invento
     setSubmitting(true)
     try {
       if (!submitRequest) throw new Error('Booking submission is not connected yet. Your entries are still here.')
-      const result = await submitRequest(bookingPayload(form, items))
+      const result = await submitRequest(bookingPayload(form, items, submissionKey.current))
       if (!result?.reference || result.status !== 'Pending') throw new Error('The server did not confirm a saved Pending request. Check with the lab before retrying.')
       setConfirmation(result)
     } catch (error) {
@@ -181,7 +182,7 @@ export default function BookingPage({ initialItems = [], inventory = [], invento
           </section>
         </div>
         {(Object.keys(errors).some((key) => errors[key]) || failure || confirmation) && <div className={`booking-feedback ${confirmation ? 'is-success' : ''}`} ref={feedback} tabIndex={-1} role={confirmation ? 'status' : 'alert'}>
-          {confirmation ? <><h2>{demo ? 'Demo request complete' : 'Request saved'}</h2><p>Reference: <strong>{confirmation.reference}</strong> · Status: <strong>{confirmation.status}</strong></p><p>{demo ? 'This is a preview confirmation. No request was sent to the lab.' : 'Your request is awaiting staff review.'}</p><button type="button" className="text-button" onClick={() => { setConfirmation(null); setItems([]); setForm((current) => ({ ...current, subject: '', purpose: '', purposeOther: '', borrowDate: '', returnDate: '' })); setEditing(null) }}>Create another request</button></> : <><strong>{failure || 'Please check the following:'}</strong>{!failure && <ul>{Object.entries(errors).filter(([, value]) => value).map(([key, value]) => <li key={key}><a href={`#${errorTarget(key)}`} onClick={(event) => { event.preventDefault(); document.getElementById(errorTarget(key))?.focus() }}>{key.startsWith('item-') ? `${items.find((item) => `item-${item.id}` === key)?.name}: ` : ''}{value}</a></li>)}</ul>}</>}
+          {confirmation ? <><h2>{demo ? 'Demo request complete' : 'Request saved'}</h2><p>Reference: <strong>{confirmation.reference}</strong> · Status: <strong>{confirmation.status}</strong></p><p>{demo ? 'This is a preview confirmation. No request was sent to the lab.' : 'Your request is awaiting staff review.'}</p><button type="button" className="text-button" onClick={() => { submissionKey.current = crypto.randomUUID(); setConfirmation(null); setItems([]); setForm((current) => ({ ...current, subject: '', purpose: '', purposeOther: '', borrowDate: '', returnDate: '' })); setEditing(null) }}>Create another request</button></> : <><strong>{failure || 'Please check the following:'}</strong>{!failure && <ul>{Object.entries(errors).filter(([, value]) => value).map(([key, value]) => <li key={key}><a href={`#${errorTarget(key)}`} onClick={(event) => { event.preventDefault(); document.getElementById(errorTarget(key))?.focus() }}>{key.startsWith('item-') ? `${items.find((item) => `item-${item.id}` === key)?.name}: ` : ''}{value}</a></li>)}</ul>}</>}
         </div>}
       </form>
     </main>

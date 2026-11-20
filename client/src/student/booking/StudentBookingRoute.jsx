@@ -2,13 +2,19 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { useAuth } from '../../auth/AuthContext.js'
 
+import { getIdToken } from '../../auth/getIdToken.js'
+
 import { getItems } from '../../data/items.js'
+
+import { createRequestSubmitter } from '../../services/bookingRequests.js'
 
 import { toBookingItem } from '../../data/inventoryClient.js'
 
 import { readInventoryCart, writeInventoryCart } from '../inventoryCart.js'
 
 import BookingPage from './BookingPage.jsx'
+
+const submitRequest = createRequestSubmitter({ endpoint: '/api/bookings', getAccessToken: getIdToken })
 
 export default function StudentBookingRoute() {
     const { profile } = useAuth()
@@ -61,6 +67,7 @@ export default function StudentBookingRoute() {
                 borrower={{ studentId: profile.id_number }}
                 initialItems={cart.items}
                 onDraftChange={saveDraft}
+                submitRequest={submitRequest}
                 draftNote={cartError}
                 inventory={inventory}
                 inventoryNote={inventoryNote}

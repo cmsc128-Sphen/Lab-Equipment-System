@@ -92,6 +92,7 @@ test('builds a trimmed payload with integer-hundredth quantities and no borrower
   assert.equal(bookingPayload(form, [{ ...chemical, quantity: '25.5' }]).items[0].quantity, 2550)
   assert.equal(bookingPayload(form, [{ ...chemical, quantity: '0.29' }]).items[0].quantity, 29)
   assert.equal('borrower' in payload, false)
+  assert.equal(bookingPayload(form, [equipment], 'key-1').submissionKey, 'key-1')
 })
 
 test('refreshing a draft keeps quantities, updates stock and drops missing items', () => {
@@ -120,4 +121,6 @@ test('API adapter rejects missing/expired sessions and surfaces server validatio
     const submit = createRequestSubmitter({ endpoint: '/requests', getAccessToken: async () => 'token', fetchImpl: async () => new Response(JSON.stringify({ message: 'Not enough stock' }), { status }) })
     await assert.rejects(submit({}), new RegExp(message))
   }
+  const backend = createRequestSubmitter({ endpoint: '/api/bookings', getAccessToken: async () => 'token', fetchImpl: async () => new Response(JSON.stringify({ error: { code: 'BOOKING_STOCK_EXCEEDED', message: 'An item no longer has enough stock.' } }), { status: 409 }) })
+  await assert.rejects(backend({}), /no longer has enough stock/)
 })

@@ -45,8 +45,10 @@ export function recheckErrors(current, form, items, today = localDate()) {
 
 // Quantities are sent as integer hundredths (2 pcs = 200, 25.5 mL = 2550), matching request_items.
 // The server takes the borrower from the session and must enforce units and availability.
-export function bookingPayload(form, items) {
+// submissionKey stays the same across retries of one draft so the server never saves it twice.
+export function bookingPayload(form, items, submissionKey) {
   return {
+    submissionKey,
     subject: form.subject.trim(), purpose: form.purpose === 'Other' ? form.purposeOther.trim() : form.purpose,
     borrowDate: form.borrowDate, returnDate: form.returnDate,
     items: items.map(({ id, quantity }) => ({ inventoryId: id, quantity: Math.round(Number(quantity) * 100) })),
