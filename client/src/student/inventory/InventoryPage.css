@@ -272,6 +272,12 @@
   border-bottom: 1px solid var(--inv-line);
 }
 
+:where(.student-inventory-page) .inventory-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 :where(.student-inventory-page) .availability-filter,
 :where(.student-inventory-page) .items-per-page {
   display: flex;
@@ -294,9 +300,32 @@
 
 :where(.student-inventory-page) .availability-filter select:focus-visible,
 :where(.student-inventory-page) .items-per-page select:focus-visible,
-:where(.student-inventory-page) .category-filter-button:focus-visible {
+:where(.student-inventory-page) .category-filter-button:focus-visible,
+:where(.student-inventory-page) .reset-filters-button:focus-visible {
   outline: 2px solid var(--inv-primary);
   outline-offset: 2px;
+}
+
+:where(.student-inventory-page) .reset-filters-button {
+  min-height: 23px;
+  padding: 0 8px;
+  color: var(--inv-primary);
+  background: var(--inv-surface);
+  border: 1px solid var(--inv-primary-line);
+  border-radius: 4px;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+:where(.student-inventory-page) .reset-filters-button:hover:not(:disabled) {
+  background: var(--inv-primary-soft);
+}
+
+:where(.student-inventory-page) .reset-filters-button:disabled {
+  color: var(--inv-muted);
+  border-color: var(--inv-line);
+  cursor: default;
+  opacity: 0.65;
 }
 
 :where(.student-inventory-page) .table-scroll {
