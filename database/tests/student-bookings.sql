@@ -160,12 +160,40 @@ begin
         raise exception 'Submission changed stock';
     end if;
 
-    -- Retrying with the same key returns the same request without a second save.
-    replay := public.submit_booking(key, 'Changed', 'Changed', today, today, items);
+    -- Retrying the same details with the same key returns the same request without a second save.
+    replay := public.submit_booking(key, 'Chem 16', 'Research', today, today + 1, items);
 
     if replay->>'id' <> saved->>'id' or not (replay->>'replayed')::boolean
         or (select count(*) from public.requests) <> requests_before + 1 then
         raise exception 'Retried submission was saved twice';
+    end if;
+
+    -- Changed details or lines under a saved key are rejected with its reference, never silently dropped.
+    begin
+        perform public.submit_booking(key, 'Chem 16', 'Changed purpose', today, today + 1, items);
+        raise exception 'Expected changed-details rejection';
+    exception when raise_exception then
+        if sqlerrm <> 'BOOKING_KEY_REUSED' then raise; end if;
+    end;
+
+    begin
+        perform public.submit_booking(key, 'Chem 16', 'Research', today, today + 1,
+            jsonb_build_array(jsonb_build_object('inventoryId', stock.id, 'quantity', 200)));
+        raise exception 'Expected changed-quantity rejection';
+    exception when raise_exception then
+        if sqlerrm <> 'BOOKING_KEY_REUSED' then raise; end if;
+    end;
+
+    begin
+        perform public.submit_booking(key, 'Chem 16', 'Research', today, today + 1, '"not an array"'::jsonb);
+        raise exception 'Expected malformed retry rejection';
+    exception when raise_exception then
+        if sqlerrm <> 'BOOKING_KEY_REUSED' then raise; end if;
+    end;
+
+    if (select count(*) from public.requests) <> requests_before + 1
+        or (select count(*) from public.request_items) <> lines_before + 1 then
+        raise exception 'A rejected retry changed saved data';
     end if;
 end;
 $$;

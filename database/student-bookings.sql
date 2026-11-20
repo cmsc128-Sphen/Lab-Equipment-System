@@ -2,6 +2,25 @@
 -- Saves one Pending request and its lines in a single transaction. Stock is not reserved here.
 begin;
 
+-- True when a retry carries the same details and lines as the request already saved under its key.
+-- Quantities are compared as JSON, so a malformed retry is simply "different" instead of a cast error.
+create or replace function les_private.booking_matches(
+    p_request_id uuid, p_subject text, p_purpose text,
+    p_borrow_date date, p_return_date date, p_items jsonb
+) returns boolean
+language sql stable security invoker set search_path = '' as $$
+    select r.subject = trim(p_subject) and r.purpose = trim(p_purpose)
+        and r.borrow_date = p_borrow_date and r.return_date = p_return_date
+        and jsonb_typeof(p_items) = 'array'
+        and (select coalesce(jsonb_agg(jsonb_build_array(ri.item_id::text, ri.qty_requested) order by ri.item_id::text), '[]'::jsonb)
+             from public.request_items ri where ri.request_id = r.id)
+          = (select coalesce(jsonb_agg(jsonb_build_array(lower(a->>'inventoryId'), a->'quantity') order by lower(a->>'inventoryId')), '[]'::jsonb)
+             from jsonb_array_elements(p_items) a)
+    from public.requests r where r.id = p_request_id;
+$$;
+
+revoke all on function les_private.booking_matches(uuid, text, text, date, date, jsonb) from public, anon, authenticated;
+
 create or replace function les_private.submit_booking(
     p_submission_key uuid, p_subject text, p_purpose text,
     p_borrow_date date, p_return_date date, p_items jsonb
@@ -35,10 +54,15 @@ begin
     end if;
 
     -- A retried submission returns the request already saved under this key.
+    -- Different details under a saved key are rejected, so later edits are never silently dropped.
     select * into booking from public.requests
     where requester_id = actor.id and submission_key = p_submission_key;
 
     if found then
+        if not coalesce(les_private.booking_matches(booking.id, p_subject, p_purpose, p_borrow_date, p_return_date, p_items), false) then
+            raise exception using message = 'BOOKING_KEY_REUSED', detail = booking.request_no;
+        end if;
+
         return jsonb_build_object('id', booking.id, 'reference', booking.request_no,
             'status', booking.status, 'createdAt', booking.created_at, 'replayed', true);
     end if;
@@ -81,6 +105,10 @@ begin
     if booking.id is null then
         select * into booking from public.requests
         where requester_id = actor.id and submission_key = p_submission_key;
+
+        if not coalesce(les_private.booking_matches(booking.id, p_subject, p_purpose, p_borrow_date, p_return_date, p_items), false) then
+            raise exception using message = 'BOOKING_KEY_REUSED', detail = booking.request_no;
+        end if;
 
         return jsonb_build_object('id', booking.id, 'reference', booking.request_no,
             'status', booking.status, 'createdAt', booking.created_at, 'replayed', true);
