@@ -6,132 +6,6 @@
   font-size: 12px;
 }
 
-:where(.admin-page) .site-header {
-  display: flex;
-  height: 54px;
-  align-items: stretch;
-  padding: 0 28px;
-  background: #fff;
-  border-bottom: 1px solid #d5d5d5;
-}
-
-:where(.admin-page) .brand-lockup {
-  display: flex;
-  min-width: 260px;
-  align-items: center;
-  gap: 8px;
-  color: #333;
-  text-decoration: none;
-}
-
-:where(.admin-page) .equipment-logo {
-  display: grid;
-  width: 27px;
-  height: 27px;
-  place-items: center;
-  color: #80734b;
-  border: 1px solid #b7ad8a;
-  border-radius: 5px;
-}
-
-:where(.admin-page) .equipment-logo svg {
-  width: 22px;
-  height: 22px;
-  stroke: currentColor;
-  stroke-width: 1;
-}
-
-:where(.admin-page) .brand-lockup > strong {
-  font-size: 15px;
-  font-weight: 650;
-  letter-spacing: -0.3px;
-}
-
-:where(.admin-page) .admin-label {
-  padding: 3px 6px;
-  background: #f3f3f3;
-  border: 1px solid #d3d3d3;
-  border-radius: 3px;
-  font-size: 9px;
-  font-weight: 700;
-}
-
-:where(.admin-page) .main-nav {
-  display: flex;
-  height: 100%;
-  align-items: stretch;
-  gap: 7px;
-}
-
-:where(.admin-page) .main-nav a,
-:where(.admin-page) .main-nav span {
-  display: flex;
-  min-width: 86px;
-  align-items: center;
-  justify-content: center;
-  padding: 0 10px;
-  color: #666;
-  text-decoration: none;
-  font-size: 11px;
-}
-
-:where(.admin-page) .main-nav a.active {
-  color: #292929;
-  border-bottom: 2px solid #383838;
-  font-weight: 700;
-}
-
-:where(.admin-page) .main-nav a.disabled-link {
-  color: #777;
-}
-
-:where(.admin-page) .main-nav span.disabled-link {
-  color: #777;
-}
-
-:where(.admin-page) .staff-profile {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 0;
-  margin-left: auto;
-  color: inherit;
-  background: none;
-  border: 0;
-  text-align: left;
-}
-
-:where(.admin-page) .profile-initials {
-  display: grid;
-  width: 25px;
-  height: 25px;
-  place-items: center;
-  background: #ededed;
-  border-radius: 3px;
-  font-size: 9px;
-}
-
-:where(.admin-page) .profile-text strong,
-:where(.admin-page) .profile-text small {
-  display: block;
-}
-
-:where(.admin-page) .profile-text strong {
-  font-size: 10px;
-  font-weight: 700;
-}
-
-:where(.admin-page) .profile-text small {
-  margin-top: 2px;
-  color: #777;
-  font-size: 9px;
-}
-
-:where(.admin-page) .profile-chevron {
-  margin-left: 4px;
-  color: #555;
-}
-
 :where(.admin-page) .booking-page {
   width: min(100%, 1640px);
   padding: 17px 28px 26px;
@@ -159,46 +33,6 @@
   margin: 5px 0 0;
   color: #777;
   font-size: 11px;
-}
-
-:where(.admin-page) .department-info {
-  display: grid;
-  gap: 4px;
-  text-align: right;
-}
-
-:where(.admin-page) .department-info strong {
-  font-size: 10px;
-  font-weight: 650;
-}
-
-:where(.admin-page) .department-info span {
-  color: #777;
-  font-size: 9px;
-}
-
-:where(.admin-page) .prototype-notice {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  margin-bottom: 11px;
-  color: #625738;
-  background: #faf8f1;
-  border: 1px solid #e8e2cf;
-  border-radius: 4px;
-  font-size: 10px;
-}
-
-:where(.admin-page) .prototype-notice > span {
-  display: grid;
-  width: 14px;
-  height: 14px;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid #9a8d63;
-  border-radius: 50%;
-  font-size: 9px;
 }
 
 :where(.admin-page) .booking-workspace {
@@ -850,32 +684,6 @@
   font-size: 10px;
 }
 
-:where(.admin-page) .prototype-popover {
-  position: fixed;
-  top: 60px;
-  right: 26px;
-  z-index: 3;
-  max-width: 290px;
-  padding: 12px 35px 12px 12px;
-  color: #555;
-  background: #fff;
-  border: 1px solid #d4d4d4;
-  border-radius: 4px;
-  box-shadow: 0 6px 22px #00000014;
-  font-size: 10px;
-  line-height: 1.5;
-}
-
-:where(.admin-page) .prototype-popover button {
-  position: absolute;
-  top: 5px;
-  right: 7px;
-  color: #555;
-  background: none;
-  border: 0;
-  font-size: 16px;
-}
-
 :where(.admin-page) .visually-hidden {
   position: absolute;
   width: 1px;
@@ -904,14 +712,6 @@
 }
 
 @media (max-width: 1100px) {
-  :where(.admin-page) .site-header {
-    padding: 0 18px;
-  }
-
-  :where(.admin-page) .brand-lockup {
-    min-width: 220px;
-  }
-
   :where(.admin-page) .booking-page {
     padding-right: 18px;
     padding-left: 18px;
@@ -946,43 +746,6 @@
 }
 
 @media (max-width: 760px) {
-  :where(.admin-page) .site-header {
-    height: auto;
-    min-height: 54px;
-    flex-wrap: wrap;
-    padding: 0 14px;
-  }
-
-  :where(.admin-page) .brand-lockup {
-    min-width: 0;
-    height: 52px;
-    flex: 1 1 auto;
-  }
-
-  :where(.admin-page) .staff-profile {
-    height: 52px;
-  }
-
-  :where(.admin-page) .profile-text {
-    display: none;
-  }
-
-  :where(.admin-page) .profile-chevron {
-    display: none;
-  }
-
-  :where(.admin-page) .main-nav {
-    width: 100%;
-    height: 38px;
-    order: 2;
-  }
-
-  :where(.admin-page) .main-nav a,
-  :where(.admin-page) .main-nav span {
-    min-width: 0;
-    flex: 1;
-  }
-
   :where(.admin-page) .booking-page {
     padding: 14px 12px 20px;
   }
@@ -991,10 +754,6 @@
     align-items: flex-start;
     flex-direction: column;
     gap: 9px;
-  }
-
-  :where(.admin-page) .department-info {
-    text-align: left;
   }
 
   :where(.admin-page) .booking-workspace {
@@ -1016,14 +775,6 @@
 }
 
 @media (max-width: 520px) {
-  :where(.admin-page) .brand-lockup > strong {
-    font-size: 13px;
-  }
-
-  :where(.admin-page) .admin-label {
-    font-size: 8px;
-  }
-
   :where(.admin-page) .page-title-row h1 {
     font-size: 19px;
   }
@@ -1104,4 +855,125 @@
     min-height: 34px;
     white-space: normal;
   }
+}
+
+.admin-page {
+  width: 100%;
+  zoom: 1.5;
+}
+
+:where(.admin-page) .equipment-app {
+  color: #475467;
+  background: #fff;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+}
+
+:where(.admin-page) .booking-page {
+  width: 100%;
+  max-width: none;
+  padding: 18px 14px;
+}
+
+:where(.admin-page) .page-title-row {
+  min-height: 0;
+  align-items: flex-end;
+  margin-bottom: 14px;
+}
+
+:where(.admin-page) .page-title-row h1 {
+  color: #111;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+:where(.admin-page) .page-title-row p {
+  margin-top: 2px;
+  color: #444;
+  font-size: 11px;
+}
+
+:where(.admin-page) .booking-list-panel,
+:where(.admin-page) .review-panel {
+  border-color: #999;
+  border-radius: 0;
+}
+
+:where(.admin-page) .list-panel-heading h2,
+:where(.admin-page) .request-heading h2,
+:where(.admin-page) .equipment-section-heading h3 {
+  color: #111;
+  font-weight: 500;
+}
+
+:where(.admin-page) .filter-tabs {
+  border-bottom-color: #888;
+}
+
+:where(.admin-page) .filter-chip.active,
+:where(.admin-page) .approve-button {
+  color: #fff;
+  background: #205b32;
+  border-color: #205b32;
+}
+
+:where(.admin-page) .filter-chip.active:hover,
+:where(.admin-page) .approve-button:hover:not(:disabled) {
+  background: #174525;
+}
+
+:where(.admin-page) .booking-row.selected {
+  background: #edf7f2;
+  box-shadow: inset 3px 0 #205b32;
+}
+
+:where(.admin-page) .booking-status.approved,
+:where(.admin-page) .availability.available {
+  color: #fff;
+  background: #205b32;
+  border-color: #205b32;
+}
+
+:where(.admin-page) .booking-status.ready-for-pickup {
+  color: #175c49;
+  background: #edf7f2;
+  border-color: #c9e2d4;
+}
+
+:where(.admin-page) .booking-status.disapproved {
+  color: #555;
+  background: #eee;
+  border-color: #ddd;
+}
+
+:where(.admin-page) .equipment-table-wrap {
+  border-color: #888;
+  border-radius: 0;
+}
+
+:where(.admin-page) .equipment-table th {
+  background: #f3f3f3;
+  border: 1px solid #999;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+:where(.admin-page) .equipment-table td {
+  height: 34px;
+  padding: 4px 8px;
+  border: 1px solid #999;
+  font-size: 11px;
+}
+
+:where(.admin-page) .equipment-table .out-of-stock-row {
+  background: #f7f7f7;
+}
+
+:where(.admin-page) .availability.available {
+  padding: 3px 7px;
+  border-radius: 3px;
+}
+
+:where(.admin-page) .review-footer {
+  background: #f7f7f7;
 }

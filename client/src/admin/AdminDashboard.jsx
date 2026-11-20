@@ -9,24 +9,12 @@ function BookingStatus({ status }) {
   return <span className={`booking-status ${className}`}>{status}</span>
 }
 
-function EquipmentLogo() {
-  return (
-    <span aria-hidden="true" className="equipment-logo">
-      <svg viewBox="0 0 32 32" fill="none">
-        <path d="M7 5h18v22H7zM10 8h12v16H10z" />
-        <path d="M12 11h8m-8 3h8m-8 3h5m-8-12V3m12 2V3" />
-      </svg>
-    </span>
-  )
-}
-
 function AdminDashboard() {
   const [bookings, setBookings] = useState(initialBookings)
   const [selectedId, setSelectedId] = useState(initialBookings[0].id)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState('All')
   const [notice, setNotice] = useState('')
-  const [showNotice, setShowNotice] = useState(false)
 
   const selectedBooking = bookings.find((booking) => booking.id === selectedId)
   const pendingCount = bookings.filter((booking) => booking.status === 'Pending').length
@@ -78,8 +66,8 @@ function AdminDashboard() {
     updateSelectedBooking((booking) => ({ ...booking, status: 'Approved' }))
     setNotice(
       selectedBooking.emailDecision
-        ? `Approval recorded for ${selectedBooking.id} in this prototype. Email is not sent.`
-        : `Approval recorded for ${selectedBooking.id} in this prototype.`,
+        ? `Approval recorded for ${selectedBooking.id}. Email was not sent.`
+        : `Approval recorded for ${selectedBooking.id}.`,
     )
   }
 
@@ -92,61 +80,25 @@ function AdminDashboard() {
     updateSelectedBooking((booking) => ({ ...booking, status: 'Disapproved' }))
     setNotice(
       selectedBooking.emailDecision
-        ? `Disapproval recorded for ${selectedBooking.id} in this prototype. Email is not sent.`
-        : `Disapproval recorded for ${selectedBooking.id} in this prototype.`,
+        ? `Disapproval recorded for ${selectedBooking.id}. Email was not sent.`
+        : `Disapproval recorded for ${selectedBooking.id}.`,
     )
   }
 
   function selectBooking(booking) {
     setSelectedId(booking.id)
     setNotice('')
-    setShowNotice(false)
   }
 
   return (
     <div className="equipment-app">
-      <header className="site-header">
-        <a aria-label="Equipment logger home" className="brand-lockup" href="#booking-review">
-          <EquipmentLogo />
-          <strong>Equipment logger</strong>
-          <span className="admin-label">ADMIN</span>
-        </a>
-
-        <nav aria-label="Main navigation" className="main-nav">
-          <a aria-current="page" className="active" href="#booking-review">Bookings</a>
-          <span aria-disabled="true" className="disabled-link">Inventory</span>
-          <span aria-disabled="true" className="disabled-link">Borrow history</span>
-        </nav>
-
-        <button
-          aria-expanded={showNotice}
-          aria-label="Lab staff profile"
-          className="staff-profile"
-          onClick={() => setShowNotice((visible) => !visible)}
-          type="button"
-        >
-          <span className="profile-initials">LC</span>
-          <span className="profile-text"><strong>L. Cruz</strong><small>Laboratory staff</small></span>
-          <span aria-hidden="true" className="profile-chevron">⌄</span>
-        </button>
-      </header>
-
       <main className="booking-page" id="booking-review">
         <section className="page-title-row">
           <div>
             <h1>Booking review</h1>
             <p>Review student request slips, check stock, and communicate your decision.</p>
           </div>
-          <div className="department-info">
-            <strong>Chemistry department · Main laboratory</strong>
-            <span>Thursday, 15 October 2026 · Illustrative request data</span>
-          </div>
         </section>
-
-        <div className="prototype-notice" role="note">
-          <span aria-hidden="true">i</span>
-          Prototype only — booking changes and email choices are temporary screen state and reset on refresh; no server or Firebase is connected.
-        </div>
 
         <section aria-label="Booking review workspace" className="booking-workspace">
           <aside aria-label="Student bookings" className="booking-list-panel">
@@ -349,7 +301,6 @@ function AdminDashboard() {
                   type="checkbox"
                 />
                 <span>Email decision to {selectedBooking.email}</span>
-                <small>Prototype only</small>
               </label>
 
               {notice && <p className="decision-notice" role="status">{notice}</p>}
@@ -393,13 +344,6 @@ function AdminDashboard() {
           )}
         </section>
       </main>
-
-      {showNotice && (
-        <div className="prototype-popover" role="status">
-          Signed in as laboratory staff. Authentication is not connected in this prototype.
-          <button aria-label="Close notice" onClick={() => setShowNotice(false)} type="button">×</button>
-        </div>
-      )}
     </div>
   )
 }
