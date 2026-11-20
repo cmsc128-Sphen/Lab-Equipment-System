@@ -24,6 +24,7 @@ const submissionErrors = {
     BOOKING_ITEMS_INVALID: [400, 'Check your items: each needs a valid quantity and may only appear once.'],
     BOOKING_ITEM_UNAVAILABLE: [409, 'An item is no longer available. Reload the page to update your request.'],
     BOOKING_STOCK_EXCEEDED: [409, 'An item no longer has enough stock. Reload the page and lower the quantity.'],
+    BOOKING_KEY_REUSED: [409, 'This request was already saved. Changes made after it was saved were not included.'],
 };
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -77,7 +78,14 @@ function createBookingsRouter(authenticate = createAuthenticationMiddleware()) {
                 // WARN for a rejected submission; nothing was saved and the student can correct it.
                 console.warn(`[WARN] bookings.submit_rejected code=${error.message} nextAction=correct`);
 
-                return response.status(known[0]).json({ error: { code: error.message, message: known[1] } });
+                // A reused key names the request saved under it, so the student can tell which one exists.
+                const reference = error.message === 'BOOKING_KEY_REUSED' && /^REQ-\d{4}-\d+$/.test(error.details ?? '') ? error.details : undefined;
+
+                return response.status(known[0]).json({ error: {
+                    code: error.message,
+                    message: reference ? `This request was already saved as ${reference}. Changes made after it was saved were not included.` : known[1],
+                    reference,
+                } });
             }
 
             if (!data || typeof data.reference !== 'string' || data.status !== 'pending') throw new Error('Unexpected result');

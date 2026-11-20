@@ -26,7 +26,7 @@ async function fixture(context, options = {}) {
 
                 if (url.pathname.endsWith('/rpc/submit_booking')) {
                     return options.submitError
-                        ? new Response(JSON.stringify({ message: options.submitError, code: 'P0001' }), { status: 400 })
+                        ? new Response(JSON.stringify({ message: options.submitError, code: 'P0001', details: options.submitErrorDetails ?? null }), { status: 400 })
                         : new Response(JSON.stringify(options.submitResult ?? { id: bookingId, reference: 'REQ-2026-7', status: 'pending', createdAt: '2026-11-20T10:00:00+00:00', replayed: false }), { headers: { 'Content-Type': 'application/json' } });
                 }
 
@@ -239,4 +239,29 @@ test('database validation failures return specific messages and unknown failures
     const odd = await fixture(context, { role: 'student', submitResult: { reference: 'REQ-1', status: 'approved' } });
 
     assert.equal((await submit(odd.url, submission())).status, 503);
+});
+
+test('a reused submission key with different details returns 409 with the saved reference', async (context) => {
+    const { url } = await fixture(context, { role: 'student', submitError: 'BOOKING_KEY_REUSED', submitErrorDetails: 'REQ-2026-7' });
+
+    const response = await submit(url, submission());
+
+    assert.equal(response.status, 409);
+
+    const { error } = await response.json();
+
+    assert.equal(error.code, 'BOOKING_KEY_REUSED');
+
+    assert.equal(error.reference, 'REQ-2026-7');
+
+    assert.match(error.message, /already saved as REQ-2026-7/);
+
+    // Unexpected detail text is never echoed to the student.
+    const odd = await fixture(context, { role: 'student', submitError: 'BOOKING_KEY_REUSED', submitErrorDetails: 'private detail' });
+
+    const body = await (await submit(odd.url, submission())).json();
+
+    assert.equal(body.error.reference, undefined);
+
+    assert.doesNotMatch(body.error.message, /private/);
 });
