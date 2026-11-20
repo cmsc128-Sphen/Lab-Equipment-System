@@ -12,6 +12,8 @@ const bookingId = '94e56ef0-b7f3-4d95-b7f0-02230ad8d8fc';
 
 const lineId = 'a6b340cc-ccb0-4140-a6f3-387f8c38af3a';
 
+const studentId = '51fd07ae-162c-4345-81ea-7fdbcf0c87c3';
+
 async function fixture(context, options = {}) {
     const queries = [];
 
@@ -42,7 +44,12 @@ async function fixture(context, options = {}) {
                     ? [{ id: bookingId, request_no: 'REQ-2026-1' }]
                     : [{ id: lineId, request_id: bookingId, qty_requested: 15050, item: { available: 240025 } }];
 
-                return new Response(JSON.stringify(rows), { headers: { 'Content-Type': 'application/json', 'Content-Range': `0-${rows.length - 1}/${rows.length}` } });
+                const body = new Headers(init.headers).get('Accept') === 'application/vnd.pgrst.object+json'
+                    ? (rows[0] ?? null) : rows;
+
+                const count = url.pathname.endsWith('/request_items') ? (options.lineCount ?? rows.length) : rows.length;
+
+                return new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json', 'Content-Range': `0-${rows.length - 1}/${count}` } });
             },
         },
     });
@@ -53,7 +60,7 @@ async function fixture(context, options = {}) {
 
     // Authentication itself has separate tests; this fixture isolates role checks and real SDK requests.
     app.use('/api', createBookingsRouter((request, _response, next) => {
-        request.auth = { profile: { role: options.role || 'admin' }, supabase };
+        request.auth = { user: { id: studentId }, profile: { role: options.role || 'admin' }, supabase };
 
         next();
     }));
@@ -211,6 +218,9 @@ test('staff accounts and malformed submissions are rejected before database work
         submission({ items: [{ inventoryId: itemId, quantity: 1.5 }] }),
         submission({ items: [{ inventoryId: itemId, quantity: 0 }] }),
         submission({ borrowDate: '25/11/2026' }),
+        submission({ borrowDate: '2026-02-30' }),
+        submission({ returnDate: '2026-13-01' }),
+        submission({ borrowDate: '0000-01-01' }),
         submission({ subject: 3 }),
     ]) {
         assert.equal((await submit(url, body)).status, 400, JSON.stringify(body));
@@ -239,4 +249,100 @@ test('database validation failures return specific messages and unknown failures
     const odd = await fixture(context, { role: 'student', submitResult: { reference: 'REQ-1', status: 'approved' } });
 
     assert.equal((await submit(odd.url, submission())).status, 503);
+});
+
+test('a replay after review returns the saved current status rather than a false save failure', async (context) => {
+    const { url } = await fixture(context, { role: 'student', submitResult: {
+        id: bookingId, reference: 'REQ-2026-7', status: 'approved', createdAt: '2026-11-20T10:00:00+00:00', replayed: true,
+    } });
+
+    const response = await submit(url, submission());
+
+    assert.equal(response.status, 200);
+
+    assert.equal((await response.json()).status, 'Approved');
+});
+
+test('a key reused for different content gives a conflict instead of confirming the changed draft', async (context) => {
+    const { url } = await fixture(context, { role: 'student', submitError: 'BOOKING_SUBMISSION_CONFLICT' });
+
+    const response = await submit(url, submission());
+
+    assert.equal(response.status, 409);
+
+    assert.equal((await response.json()).error.code, 'BOOKING_SUBMISSION_CONFLICT');
+});
+
+test('student history and receipts explicitly filter by the authenticated owner', async (context) => {
+    const { url, queries } = await fixture(context, { role: 'student' });
+
+    const studentUrl = url.replace('/admin/bookings', '/bookings');
+
+    const response = await fetch(studentUrl);
+
+    assert.equal(response.status, 200);
+
+    assert.equal((await response.json()).limit, 20);
+
+    assert.equal(queries[0].url.searchParams.get('requester_id'), `eq.${studentId}`);
+
+    const receipt = await fetch(`${studentUrl}/${bookingId}`);
+
+    assert.equal(receipt.status, 200);
+
+    assert.equal((await receipt.json()).request.items[0].id, lineId);
+
+    assert.equal(queries[1].url.searchParams.get('requester_id'), `eq.${studentId}`);
+
+    assert.equal(queries[1].url.searchParams.get('id'), `eq.${bookingId}`);
+});
+
+test('missing or other-owner receipts return 404 and never query their lines', async (context) => {
+    const { url, queries } = await fixture(context, { role: 'student', empty: true });
+
+    const response = await fetch(`${url.replace('/admin/bookings', '/bookings')}/${bookingId}`);
+
+    assert.equal(response.status, 404);
+
+    assert.equal(queries.length, 1);
+});
+
+test('student read endpoints reject invalid query filters and staff roles', async (context) => {
+    const student = await fixture(context, { role: 'student' });
+
+    const url = student.url.replace('/admin/bookings', '/bookings');
+
+    assert.equal((await fetch(`${url}?requester_id=someone-else`)).status, 400);
+
+    assert.equal((await fetch(`${url}/not-an-id`)).status, 400);
+
+    assert.equal(student.queries.length, 0);
+
+    const staff = await fixture(context);
+
+    assert.equal((await fetch(staff.url.replace('/admin/bookings', '/bookings'))).status, 403);
+
+    assert.equal(staff.queries.length, 0);
+});
+
+test('student read failures stay private and incomplete receipts are never returned', async (context) => {
+    // Upstream failures must not expose provider messages or look like empty successful histories.
+    const failed = await fixture(context, { role: 'student', failure: true });
+
+    const failedUrl = failed.url.replace('/admin/bookings', '/bookings');
+
+    for (const path of [failedUrl, `${failedUrl}/${bookingId}`]) {
+        const response = await fetch(path);
+
+        assert.equal(response.status, 503);
+
+        assert.doesNotMatch(await response.text(), /Private provider/);
+    }
+
+    // A response with fewer lines than its count is an error, not a partial borrowing slip.
+    const partial = await fixture(context, { role: 'student', lineCount: 2 });
+
+    const receipt = await fetch(`${partial.url.replace('/admin/bookings', '/bookings')}/${bookingId}`);
+
+    assert.equal(receipt.status, 503);
 });
